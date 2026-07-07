@@ -1,0 +1,12 @@
+model Payment {
+    id            String        @id @default(uuid())
+    requestId     String        
+    amount        Decimal
+    paymentMethod String
+    transactionId String
+    paymentStatus paymentStatus @default(PENDING)
+    paidAt        DateTime?
+    createdAt     DateTime      @default(now())
+
+   
+}

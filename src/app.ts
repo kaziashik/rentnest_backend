@@ -2,6 +2,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import config from "./config";
+import { userRouter } from "./modules/users/user.routers";
+import { authRouter } from "./modules/auth/auth.routes";
 
 // import { userRoutes } from "./modules/user/user.route";
 
@@ -24,6 +26,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
 
-// app.use("/api/users", userRoutes);
+app.use("/api/users", userRouter);
+app.use("/api/auth",authRouter)
 
 export default app;

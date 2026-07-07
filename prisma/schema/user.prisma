@@ -1,0 +1,16 @@
+
+model User {
+    id        String     @id @default(ulid())
+    name      String     @db.VarChar(255)
+    email     String     @unique
+    password String
+    role      Role       @default(TENANT)
+    phone     String?
+    photo     String?
+    activeStatus    UserStatus @default(ACTIVE)
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+
+    // A user with role LANDLORD owns many properties
+  properties     Property[]      @relation("LandlordProperties")
+}

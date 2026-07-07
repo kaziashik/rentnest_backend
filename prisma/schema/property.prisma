@@ -1,0 +1,18 @@
+model Property {
+    id              String             @id @default(ulid())
+    propertyOwnerId String
+    categoryId      String
+    title           String
+    location        String
+    rentPrice       Decimal
+    bedRooms        Int
+    bathRooms       Int
+    fetures         Json
+    availability    AvailabilityStatus @default(AVAILABLE)
+    property_image  Json?
+    createdAt       DateTime           @default(now())
+    updatedAt       DateTime           @updatedAt
+
+    // Many properties belong to one property owner (landlord)
+    propertyOwner User @relation("LandlordProperties", fields: [propertyOwnerId], references: [id])
+}
