@@ -8,7 +8,6 @@ import { sendResponse } from "../../utils/sendResponse";
 const loginUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const paylod = req.body;
-    console.log("paylod", paylod);
     const { accessToken, refreshToken } = await authService.logInUser(paylod);
 
     res.cookie("accessToken", accessToken, {

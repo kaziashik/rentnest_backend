@@ -4,6 +4,7 @@ import express, { Application, Request, Response } from "express";
 import config from "./config";
 import { userRouter } from "./modules/users/user.routers";
 import { authRouter } from "./modules/auth/auth.routes";
+import { adminRouter } from "./modules/admin/admin.router";
 
 // import { userRoutes } from "./modules/user/user.route";
 
@@ -28,5 +29,6 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/auth",authRouter)
+app.use("/api/admin",adminRouter)
 
 export default app;

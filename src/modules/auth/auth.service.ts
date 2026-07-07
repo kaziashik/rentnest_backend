@@ -3,11 +3,9 @@ import { prisma } from "../../lib/prisma";
 import { jwtutils } from "../../utils/jwt";
 import config from "../../config";
 import { SignOptions } from "jsonwebtoken";
+import { ILoginuser } from "./auth.interface";
 
-interface ILoginuser{
-    email:string
-    password: string
-}
+
 
 const logInUser=async(payload: ILoginuser)=>{
     const {email,password}=payload;
