@@ -15,4 +15,6 @@ model Property {
 
     // Many properties belong to one property owner (landlord)
     propertyOwner User @relation("LandlordProperties", fields: [propertyOwnerId], references: [id])
+
+    category  Category  @relation( fields: [categoryId],references: [id])
 }

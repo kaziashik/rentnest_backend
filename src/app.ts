@@ -5,6 +5,8 @@ import config from "./config";
 import { userRouter } from "./modules/users/user.routers";
 import { authRouter } from "./modules/auth/auth.routes";
 import { adminRouter } from "./modules/admin/admin.router";
+import { propertiesRouter } from "./modules/properties/properties.routers";
+import { categoryRouter } from "./modules/propertyCatagory/catagoty.routers";
 
 // import { userRoutes } from "./modules/user/user.route";
 
@@ -30,5 +32,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/users", userRouter);
 app.use("/api/auth",authRouter)
 app.use("/api/admin",adminRouter)
+app.use("/api/properties",propertiesRouter)
+app.use("/api/categories", categoryRouter);
 
 export default app;

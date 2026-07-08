@@ -1,8 +1,8 @@
-model category {
+model Category {
     id String @id @default(uuid())
     name String @unique
     description String?
     createdAt DateTime @default(now())
 
-    // properties Property[]
+    properties Property[]
 }
