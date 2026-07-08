@@ -5,7 +5,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpsStatus from "http-status";
 import { prisma } from "../../lib/prisma";
 
-const registeruser = catchAsync(
+const registerUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;
     const user = await userService.registerUserIntoDB(payload);
@@ -13,8 +13,8 @@ const registeruser = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.CREATED,
-      message: "user created successfully",
-      data: { user },
+      message: "User registered successfully",
+      data: user,
     });
   },
 );
@@ -26,8 +26,8 @@ const getMyprofile = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "This is your Profile",
-      data: { profile },
+      message: "Profile retrieved successfull",
+      data: profile,
     });
   },
 );
@@ -43,16 +43,14 @@ const updateMyProfile = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "user Profile Updated succesfully",
-      data: {
-        updateProfile,
-      },
+      message: "Profile Updated succesfully",
+      data: updateProfile,
     });
   },
 );
 
 export const userController = {
-  registeruser,
+  registerUser,
   getMyprofile,
   updateMyProfile,
 };

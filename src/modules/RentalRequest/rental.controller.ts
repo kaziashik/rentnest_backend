@@ -6,64 +6,60 @@ import { rentalService } from "./rental.service";
 import { prisma } from "../../lib/prisma";
 
 
-const rentalRequestCreat = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
+const createRentalRequest = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
  const payload=req.body;
  const tenantId=req.user?.id;
 
-  const result= await rentalService.rentalRequestCreat(payload, tenantId as string)
+  const result= await rentalService.createRentalRequest(payload, tenantId as string)
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.CREATED,
-      message: "Property  request created successfully ",
+      message: "Rental request created successfully ",
       data: result,
     });
 })
 
-const rentalRequestCheck = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
-    const result=await rentalService.rentalRequestCheck()
+const getAllRentalRequests = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
+    const result=await rentalService.getAllRentalRequests()
       sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "Property all Request retrive successfully ",
+      message: "Rental requests retrieved successfully",
       data: result,
     });
 
 })
 
-const returnSingleRequest = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
+const getRentalRequestById = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
     
     const {requestId}=req.params;
 
-    const result=await rentalService.returnSingleRequest(requestId as string)
+    const result=await rentalService.getRentalRequestById(requestId as string)
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "Property Request retrive successfully ",
+      message: "Rental request retrieved successfully",
       data: result,
     });
 
 
 })
 
-const landlordRequsApproveOrRejectCheck = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
-    console.log(req.body);
+const updateRentalRequestStatus = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
     const {status}=req.body;
-    console.log("checkResponse",req.params);
     const {id}=req.params;
-    console.log(id);
-    
-    const result=await rentalService.landlordRequsApproveOrRejectCheck(status,id as string )
+    const result=await rentalService.updateRentalRequestStatus(status,id as string )
      sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "Property Request Response  successfully ",
+      message: "Rental request status updated successfully.",
       data: result,
     });
 })
 
 export const rentalController = {
-  rentalRequestCreat ,
-  rentalRequestCheck,
-  landlordRequsApproveOrRejectCheck,
-  returnSingleRequest,
+  createRentalRequest ,
+  getAllRentalRequests,
+  updateRentalRequestStatus,
+  getRentalRequestById,
 };
