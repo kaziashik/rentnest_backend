@@ -17,4 +17,10 @@ model Property {
     propertyOwner User @relation("LandlordProperties", fields: [propertyOwnerId], references: [id])
 
     category  Category  @relation( fields: [categoryId],references: [id])
+
+//one property can receive many rental request
+    rentalRequests RentalRequest[]
+
+// one property can have many revews
+reviews Review[]
 }

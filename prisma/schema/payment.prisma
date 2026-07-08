@@ -1,6 +1,6 @@
 model Payment {
     id            String        @id @default(uuid())
-    requestId     String        
+    requestId     String       @unique 
     amount        Decimal
     paymentMethod String
     transactionId String
@@ -8,5 +8,9 @@ model Payment {
     paidAt        DateTime?
     createdAt     DateTime      @default(now())
 
-   
+    // One payment belongs to one rental request
+  rentalRequest   RentalRequest @relation(fields: [requestId], references: [id])
+
+  @@index([requestId])
+
 }

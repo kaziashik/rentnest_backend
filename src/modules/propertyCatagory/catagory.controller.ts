@@ -9,11 +9,12 @@ import { catagoryService } from "./catagory.service";
 const creatPropertyCategorie = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const paylod = req.body;
-    console.log(paylod);
     const result = await catagoryService.creatPropertyCategorie(paylod)
-    res.status(201).json({
+
+    sendResponse(res, {
       success: true,
-      message: "Property category created successfully",
+      statusCode: httpsStatus.CREATED,
+      message: "Property category created successfully ",
       data: result,
     });
   },

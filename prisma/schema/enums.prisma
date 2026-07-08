@@ -14,13 +14,12 @@ enum AvailabilityStatus {
     UNAVAILABLE
 }
 
-
 enum RentalRequentStatus {
     PENDING
     APPROVED
     REJECTED
-    //   ACTIVE
-    //   COMPLETEDF
+    ACTIVE
+    COMPLETEDF
 }
 
 enum paymentStatus {

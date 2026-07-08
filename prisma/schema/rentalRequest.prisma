@@ -8,4 +8,21 @@ model RentalRequest {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+// Many rental requests belong to one property
+  property    Property  @relation(fields: [propertyId], references: [id])
+
+  // Many rental requests are submitted by one tenant
+  tenant      User      @relation("TenantRentalRequests", fields: [tenantId], references: [id])
+
+  // One rental request generates one payment
+  payment     Payment?
+
+  // One rental request allows one review, once completed
+  review      Review?
+
+  @@index([propertyId])
+  @@index([tenantId])
+
+
+
 }

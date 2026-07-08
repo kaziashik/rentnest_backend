@@ -7,6 +7,8 @@ import { authRouter } from "./modules/auth/auth.routes";
 import { adminRouter } from "./modules/admin/admin.router";
 import { propertiesRouter } from "./modules/properties/properties.routers";
 import { categoryRouter } from "./modules/propertyCatagory/catagoty.routers";
+import { rentlRequestRouter } from "./modules/RentalRequest/rental.routers";
+import { revewRouter } from "./modules/review/review.router";
 
 // import { userRoutes } from "./modules/user/user.route";
 
@@ -34,5 +36,7 @@ app.use("/api/auth",authRouter)
 app.use("/api/admin",adminRouter)
 app.use("/api/properties",propertiesRouter)
 app.use("/api/categories", categoryRouter);
+app.use("/api/rentals",rentlRequestRouter);
+app.use("/api/review",revewRouter)
 
 export default app;

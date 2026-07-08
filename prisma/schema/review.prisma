@@ -1,0 +1,22 @@
+model Review {
+  id         String   @id @default(uuid())
+  propertyId String
+  tenantId   String
+  requestId  String   @unique
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  // Many reviews belong to one property
+  property   Property      @relation(fields: [propertyId], references: [id])
+
+  // Many reviews are written by one tenant
+  tenant     User          @relation("TenantReviews", fields: [tenantId], references: [id])
+
+  // One review belongs to exactly one completed rental request
+  rentalRequest RentalRequest @relation(fields: [requestId], references: [id])
+
+  @@unique([tenantId, propertyId])
+  @@index([propertyId])
+  @@index([tenantId])
+}
