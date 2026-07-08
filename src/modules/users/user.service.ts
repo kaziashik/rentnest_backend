@@ -63,8 +63,13 @@ const getMyprofileDB = async (userId : any) => {
 };
 
 
-const updateMyProfileDB = async (userId: any, payload: any) => {
+const updateMyProfileDB = async (userId: string, payload: any) => {
   const { name, email, password, role, phone } = payload;
+
+    if (role !== "TENANT" && role !== "LANDLORD") {
+    throw new Error("Invalid role. Choose either TENANT or LANDLORD.");
+  }
+  
   const hashPassword = await bcrypt.hash(
     password,
     Number(config.bcrypt_salt_rounds),
