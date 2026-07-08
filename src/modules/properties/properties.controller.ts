@@ -3,7 +3,6 @@ import { catchAsync } from "../../utils/catchAsync";
 import { propertyService } from "./properties.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpsStatus from "http-status";
-import { prisma } from "../../lib/prisma";
 
 const createProperty = catchAsync( async (req: Request, res: Response, next: NextFunction)=>{
     console.log(req.body);
@@ -20,7 +19,7 @@ const createProperty = catchAsync( async (req: Request, res: Response, next: Nex
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.CREATED,
-      message: "Property Creted succesfully",
+      message: "Property Created successfully",
       data: result,
     });
 })
@@ -30,10 +29,11 @@ const updateProperty = catchAsync(async(req:Request,res:Response,next:NextFuncti
     console.log(req.params);
     const paylod=req.body
     const result= await propertyService.updateProperty(paylod, id as string)
+
      sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "Property updated succesfully",
+      message: "Property updated succesafully",
       data: result,
     });
 });
@@ -44,7 +44,7 @@ const getAllProperties = catchAsync(async(req: Request, res: Response, next: Nex
     sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "All property  retrive succesfully ",
+      message: "properties  retrive successfully ",
       data: result,
     });
 })
@@ -55,7 +55,7 @@ const getPropertyById = catchAsync(async(req:Request,res:Response,next:NextFunct
      sendResponse(res, {
       success: true,
       statusCode: httpsStatus.OK,
-      message: "property  retrive succesfully ",
+      message: "property  retrived successfully ",
       data: result,
     });
 
@@ -65,15 +65,27 @@ const getPropertyCategories = catchAsync(async(req:Request,res:Response,next:Nex
     const result=await propertyService.getPropertyCategories()
      sendResponse(res, {
       success: true,
-      statusCode: httpsStatus.CREATED,
-      message: "All property  catagory succesfully ",
-      data: {result},
+      statusCode: httpsStatus.OK,
+      message: "property  catagories retrived succesfully ",
+      data: result,
     });
 });
 
 
 
-const deleteProperty = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{});
+
+const deleteProperty = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
+  const { id } = req.params;
+
+  await propertyService.deleteProperty(id as string);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpsStatus.OK,
+    message: "Property deleted successfully.",
+    data: null,
+  });
+});
 
 export const propertyController = {
   getAllProperties,

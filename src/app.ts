@@ -10,6 +10,9 @@ import { categoryRouter } from "./modules/propertyCatagory/catagoty.routers";
 import { rentlRequestRouter } from "./modules/RentalRequest/rental.routers";
 import { revewRouter } from "./modules/review/review.router";
 import { paymentRoutes } from "./modules/payment/payment.router";
+
+
+
 import { stripeWebhook } from "./modules/payment/webhook.controller";
 
 
@@ -25,9 +28,12 @@ app.use(
 );
 
 
-// In server.ts or app.ts
-app.post("/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+// Add this  In server.ts or app.ts
+app.post("/api/subscription/webhook", express.raw({ type: "application/json" }), stripeWebhook);
+
+
 // Middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

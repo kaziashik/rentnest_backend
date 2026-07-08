@@ -19,27 +19,32 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the successful payment
+  // Only log if it's the event we care about
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as any;
 
-    // Create the payment record in your database
-    await prisma.payment.create({
-      data: {
-        requestId: session.metadata.requestId,
-        amount: session.amount_total / 100, // Stripe uses cents
-         paymentStatus: "PAID",
-        transactionId: session.payment_intent,
-        paymentMethod: "card",
-        paidAt: new Date(),
-      },
-    });
-    
-    // Optional: Update your RentalRequest status to "PAID"
-    await prisma.rentalRequest.update({
-      where: { id: session.metadata.requestId },
-      data: { status: "ACTIVE" } 
-    });
+    // Safety Check: Ensure metadata exists
+    if (session.metadata?.requestId) {
+      console.log("Processing Payment for Request ID:", session.metadata.requestId);
+
+      await prisma.payment.create({
+        data: {
+          requestId: session.metadata.requestId,
+          amount: session.amount_total / 100,
+          paymentStatus: "PAID",
+          transactionId: session.payment_intent as string,
+          paymentMethod: "card",
+          paidAt: new Date(),
+        },
+      });
+
+      await prisma.rentalRequest.update({
+        where: { id: session.metadata.requestId },
+        data: { status: "ACTIVE" }
+      });
+    } else {
+      console.error("Payment succeeded but no requestId found in metadata!");
+    }
   }
 
   res.json({ received: true });
