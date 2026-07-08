@@ -11,6 +11,7 @@ model User {
     createdAt DateTime   @default(now())
     updatedAt DateTime   @updatedAt
 
+
     // A user with role LANDLORD owns many properties
   properties     Property[]      @relation("LandlordProperties")
   //a user with role tenant submit many rental requests

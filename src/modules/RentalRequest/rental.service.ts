@@ -24,11 +24,27 @@ const rentalRequestCreat = async (payload: IRequest, tenantId: string) => {
   return request;
 };
 
-const rentalRequestCheck = async () => {};
+const rentalRequestCheck = async () => {
+    const result= await prisma.rentalRequest.findMany()
+    return result
+};
 
-const returnSingleRequest = async () => {};
+const returnSingleRequest = async (rentalRequstId: string) => {
+    const result =await prisma.rentalRequest.findFirstOrThrow({
+        where:{id:rentalRequstId}
+    })
+    return result
+};
 
-const landlordRequsApproveOrRejectCheck = async () => {};
+const landlordRequsApproveOrRejectCheck = async (status: RentalRequentStatus, rentalRequstId: string) => {
+    const result=await prisma.rentalRequest.update({
+        where: {id: rentalRequstId},
+        data: {
+            status
+        }
+    })
+    return result
+};
 
 export const rentalService = {
   rentalRequestCreat,
