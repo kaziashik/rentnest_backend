@@ -25,10 +25,11 @@ const createProperty = catchAsync( async (req: Request, res: Response, next: Nex
 })
 
 const updateProperty = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
-    const {id}=req.params
-    console.log(req.params);
-    const paylod=req.body
-    const result= await propertyService.updateProperty(paylod, id as string)
+  const { id } = req.params;
+  const payload = req.body;
+  const user = req.user as { id: string; role: string }; // Get from auth middleware
+
+    const result = await propertyService.updateProperty(payload, id as string, user);
 
      sendResponse(res, {
       success: true,
@@ -76,8 +77,11 @@ const getPropertyCategories = catchAsync(async(req:Request,res:Response,next:Nex
 
 const deleteProperty = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
   const { id } = req.params;
+   
+  const payload = req.body;
+  const user = req.user as { id: string; role: string }; // Get from auth middleware
 
-  await propertyService.deleteProperty(id as string);
+  await propertyService.deleteProperty(id as string, user);
 
   sendResponse(res, {
     success: true,

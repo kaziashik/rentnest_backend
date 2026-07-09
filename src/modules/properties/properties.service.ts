@@ -20,28 +20,94 @@ const createProperty = async (userId: string, paylod: IProperty) => {
       ...paylod,
       propertyOwnerId: userId,
     },
-    include:{
-        category: true
-    }
+     include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      propertyOwner: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+    },
   });
   return result;
 };
 
-const updateProperty = async (paylod: IProperty, propertyId: string) => {
-  const result = await prisma.property.update({
-    where: { id: propertyId },
-    data: {
-      ...paylod,
-    },
-    include: {
-      category: true,
+const updateProperty = async (
+  payload: IProperty,
+  propertyId: string,
+  user: { id: string; role: string },
+) => {
+
+  const property = await prisma.property.findUniqueOrThrow({
+    where: {
+      id: propertyId,
     },
   });
+
+
+  // Landlord can update only their own property
+  if (
+    user.role === "LANDLORD" &&
+    property.propertyOwnerId !== user.id
+  ) {
+    throw new Error("You are not allowed to update this property");
+  }
+
+
+  // Tenant cannot update property
+  if (user.role === "TENANT") {
+    throw new Error("Tenant cannot update property");
+  }
+
+
+  const result = await prisma.property.update({
+    where: {
+      id: propertyId,
+    },
+    data: payload,
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      propertyOwner: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+    },
+  });
+
+
   return result;
 };
 
 const getAllProperties = async () => {
-  const gettAllProperty = await prisma.property.findMany();
+  const gettAllProperty = await prisma.property.findMany({
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      propertyOwner: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+    },
+  });
   return gettAllProperty;
 };
 
@@ -49,27 +115,72 @@ const getPropertyById = async (propertyId: string) => {
   const result = await prisma.property.findFirstOrThrow({
     where: { id: propertyId },
     include: {
-      category: true,
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      propertyOwner: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
     },
   });
   return result;
 };
 
-const getPropertyCategories = async() => {
-    const result= await prisma.category.findMany({
-        select:{
-            id: true,
-            name: true,
-        }
-    })
-    return result;
+const getPropertyCategories = async () => {
+  const result = await prisma.category.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+  return result;
 };
 
-const deleteProperty =async (propertyId: string) => {
-    const result=await prisma.property.delete({
-        where:{id: propertyId}
-    })
-    return result;
+const deleteProperty = async (
+  propertyId: string,
+  user: { id: string; role: string },
+) => {
+
+  const property = await prisma.property.findUniqueOrThrow({
+    where: {
+      id: propertyId,
+    },
+  });
+
+
+  // Landlord can delete only their own property
+  if (
+    user.role === "LANDLORD" &&
+    property.propertyOwnerId !== user.id
+  ) {
+    throw new Error(
+      "You are not allowed to delete this property."
+    );
+  }
+
+
+  // Tenant cannot delete property
+  if (user.role === "TENANT") {
+    throw new Error(
+      "Tenant cannot delete property."
+    );
+  }
+
+
+  const result = await prisma.property.delete({
+    where: {
+      id: propertyId,
+    },
+  });
+
+
+  return result;
 };
 
 export const propertyService = {
