@@ -8,7 +8,6 @@ const router=Router()
 
 
 router.get("/", propertyController.getAllProperties);
-router.get("/categories", propertyController.getPropertyCategories);
 router.get("/:id", propertyController.getPropertyById);
 router.post("/landlord",auth(Role.LANDLORD,Role.ADMIN), propertyController.createProperty);
 router.put("/landlord/:id", propertyController.updateProperty);
