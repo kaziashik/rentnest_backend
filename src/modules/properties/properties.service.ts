@@ -223,6 +223,33 @@ const updateProperty = async (
 };
 
 
+
+const getPropertyByOwner = async (propertyOwnerId: string) => {
+  try {
+    const result = await prisma.property.findMany({
+      where: { propertyOwnerId },
+      include: {
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        propertyOwner: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    return result;
+  } catch (error) {
+    throw new Error("You have not creat any property . Please plz clreat.");
+  }
+};
+
 const getPropertyById = async (propertyId: string) => {
   try {
     const result = await prisma.property.findUniqueOrThrow({
@@ -301,4 +328,5 @@ export const propertyService = {
   createProperty,
   updateProperty,
   deleteProperty,
+  getPropertyByOwner
 };

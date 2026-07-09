@@ -23,7 +23,7 @@ const reviewCreate = catchAsync(
 
 const getReviewsByTenant = catchAsync(async (req: Request, res: Response) => {
   const tenantId= req.user?.id;
-  console.log(tenantId);
+  
   const result = await reviewService.getReviewsByTenant(tenantId as string);
 
   sendResponse(res, {

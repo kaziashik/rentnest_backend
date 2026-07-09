@@ -4,7 +4,7 @@ import { IReview } from "./review.interface";
 
 const reviewCreate = async (payload: IReview, tenantId: string) => {
   const result= await prisma.$transaction(async (tx) => {
-    // 1. Verify existence and ownership
+
     const rentalRequest = await tx.rentalRequest.findFirstOrThrow({
       where: { id: payload.requestId },
     });
@@ -13,12 +13,12 @@ const reviewCreate = async (payload: IReview, tenantId: string) => {
       throw new Error("You are not authorized to review this property.");
     }
 
-    // 2. Check status (fixed the typo 'COMPLETEDF')
+
     if (rentalRequest.status !== RentalRequentStatus.COMPLETED) {
       throw new Error("You can only review a property after the rental has been completed.");
     }
 
-    // 3. Prevent duplicate reviews
+    
     const existingReview = await tx.review.findUnique({
       where: { requestId: payload.requestId },
     });
@@ -27,7 +27,7 @@ const reviewCreate = async (payload: IReview, tenantId: string) => {
       throw new Error("You have already submitted a review for this rental.");
     }
 
-    // 4. Create the review
+   
     return await tx.review.create({
       data: {
         ...payload,

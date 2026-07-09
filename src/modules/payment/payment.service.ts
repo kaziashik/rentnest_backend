@@ -13,7 +13,7 @@ const createCheckoutSession = async (requestId: string) => {
   // Allow payment only after landlord approval
   if (rentalRequest.status !== "APPROVED") {
     throw new Error(
-      "This rental request has not been approved by the landlord.",
+      "This rental request has not been approved by the landlord plz wait for approve or contat admin.",
     );
   }
 

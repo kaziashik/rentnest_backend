@@ -70,6 +70,20 @@ const getPropertyById = catchAsync(async(req:Request,res:Response,next:NextFunct
 
 });
 
+const getPropertyByOwner = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
+    const propertyOwnerId=req.user?.id;
+    const result= await propertyService.getPropertyByOwner(propertyOwnerId as string)
+     sendResponse(res, {
+      success: true,
+      statusCode: httpsStatus.OK,
+      message: "your all of property  retrived successfully ",
+      data: result,
+    });
+
+});
+
+
+
 const getPropertyCategories = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
     const result=await propertyService.getPropertyCategories()
      sendResponse(res, {
@@ -106,4 +120,5 @@ export const propertyController = {
   createProperty,
   updateProperty,
   deleteProperty,
+  getPropertyByOwner
 };
