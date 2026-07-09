@@ -23,4 +23,6 @@ model Property {
 
 // one property can have many revews
 reviews Review[]
+
+@@index([propertyOwnerId])
 }

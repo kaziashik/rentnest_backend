@@ -20,13 +20,17 @@ const createRentalRequest = catchAsync(async(req: Request,res:Response,next: Nex
 })
 
 const getAllRentalRequests = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
-    const result=await rentalService.getAllRentalRequests()
-      sendResponse(res, {
-      success: true,
-      statusCode: httpsStatus.OK,
-      message: "Rental requests retrieved successfully",
-      data: result,
-    });
+    // Extract user info from the request object (populated by auth middleware)
+  const user = req.user as { id: string; role: string };
+
+  const result = await rentalService.getAllRentalRequests(user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpsStatus.OK,
+    message: "Rental requests retrieved successfully",
+    data: result,
+  });
 
 })
 
@@ -41,21 +45,23 @@ const getRentalRequestById = catchAsync(async(req: Request,res:Response,next: Ne
       message: "Rental request retrieved successfully",
       data: result,
     });
-
-
 })
 
-const updateRentalRequestStatus = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
-    const {status}=req.body;
-    const {id}=req.params;
-    const result=await rentalService.updateRentalRequestStatus(status,id as string )
-     sendResponse(res, {
-      success: true,
-      statusCode: httpsStatus.OK,
-      message: "Rental request status updated successfully.",
-      data: result,
-    });
-})
+// rental.controller.ts
+const updateRentalRequestStatus = catchAsync(async (req: Request, res: Response) => {
+  const { status } = req.body;
+  const { id } = req.params;
+  const user = req.user as { id: string; role: string }; // Get from auth middleware
+
+  const result = await rentalService.updateRentalRequestStatus(status, id as string, user);
+  
+  sendResponse(res, {
+    success: true,
+    statusCode: httpsStatus.OK,
+    message: "Status updated successfully.",
+    data: result,
+  });
+});
 
 export const rentalController = {
   createRentalRequest ,
