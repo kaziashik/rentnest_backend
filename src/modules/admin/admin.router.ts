@@ -6,10 +6,8 @@ import { Role } from "../../../prisma/generated/prisma/enums";
 const router = Router();
 
 router.get("/allusers", auth(Role.ADMIN), adminController.getAllUsers);
-router.get("/users/:id", adminController.getSingleUser);
-
-router.patch("/users/:id/status", adminController.updateUserStatus);
-
-router.delete("/users/:id", adminController.deleteUser);
+router.get("/user/:id", adminController.getSingleUser);
+router.patch("/user/:id/status", adminController.updateUserStatus);
+router.delete("/user/:id", adminController.deleteUser);
 
 export const adminRouter = router;

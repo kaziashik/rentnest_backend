@@ -35,9 +35,10 @@ const getSingleUser = catchAsync(
 const updateUserStatus = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { status } = req.body;
+    const { activeStatus} = req.body;
+    console.log(activeStatus);
 
-    const result = await adminService.updateUserStatus(id as string, status);
+    const result = await adminService.updateUserStatus(id as string, activeStatus);
 
     sendResponse(res, {
       success: true,
@@ -52,13 +53,13 @@ const deleteUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
 
-    await adminService.deleteUser(id as string);
+    const result=await adminService.deleteUser(id as string);
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
       message: "User deleted successfully.",
-      data: null,
+      data: result,
     });
   },
 );
