@@ -1,53 +1,90 @@
+import { RentalRequentStatus } from "../../../prisma/generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { IReview } from "./review.interface";
 
-const createReview = async (payload: IReview, tenantId: string) => {
-  const result = await prisma.review.create({
-    data: {
-      ...payload,
-      tenantId,
-    },
+const reviewCreate = async (payload: IReview, tenantId: string) => {
+  const result= await prisma.$transaction(async (tx) => {
+    // 1. Verify existence and ownership
+    const rentalRequest = await tx.rentalRequest.findFirstOrThrow({
+      where: { id: payload.requestId },
+    });
+
+    if (rentalRequest.tenantId !== tenantId) {
+      throw new Error("You are not authorized to review this property.");
+    }
+
+    // 2. Check status (fixed the typo 'COMPLETEDF')
+    if (rentalRequest.status !== RentalRequentStatus.COMPLETED) {
+      throw new Error("You can only review a property after the rental has been completed.");
+    }
+
+    // 3. Prevent duplicate reviews
+    const existingReview = await tx.review.findUnique({
+      where: { requestId: payload.requestId },
+    });
+
+    if (existingReview) {
+      throw new Error("You have already submitted a review for this rental.");
+    }
+
+    // 4. Create the review
+    return await tx.review.create({
+      data: {
+        ...payload,
+        tenantId,
+      },
+    });
   });
   return result;
 };
 
-// const result = await prisma.$transaction(async (tx) => {
-//   const request = await tx.rentalRequest.findUnique({ where: { id: payload.requestId } });
 
-//   if (request?.status !== 'COMPLETED') throw new Error("Request not completed");
-
-//   return await tx.review.create({ data: { ...payload, tenantId } });
-// });
-
-const getAllReviews = async () => {
+const getReviewsByTenant = async ( tenantId: string) => {
   const result = await prisma.review.findMany({
+    where:{id: tenantId},
     include: {
-      property: true,
-      tenant: true,
-      rentalRequest: true,
+      property:
+      {
+        select:{
+          title: true,
+          location: true,
+          rentPrice: true
+        }
+      }
     },
   });
 
   return result;
 };
 
-const getReviewById = async (reviewId: string) => {
-  const result = await prisma.review.findUniqueOrThrow({
-    where: {
-      id: reviewId,
-    },
-    include: {
-      property: true,
-      tenant: true,
-      rentalRequest: true,
-    },
-  });
+const getReviewsByProperty = async (propertyId: string) => {
+  // 1. Fetch data in a single transaction to ensure consistency and performance
+  const [reviews, stats] = await prisma.$transaction([
+    prisma.review.findMany({
+      where: { propertyId },
+      include: {
+        tenant: {
+          select: { name: true, photo: true },
+        },
+      },
+    }),
+    prisma.review.aggregate({
+      where: { propertyId },
+      _count: { id: true },
+      _avg: { rating: true },
+    }),
+  ]);
 
-  return result;
+  // 2. Map the results to a clear, easy-to-use structure
+  return {
+    reviews,
+    totalCount: stats._count.id,
+    averageRating: stats._avg.rating || 0, // Fallback to 0 if no reviews exist
+  };
 };
 
 export const reviewService = {
-  createReview,
-  getAllReviews,
-  getReviewById,
+  reviewCreate,
+  getReviewsByTenant,
+  getReviewsByProperty,
 };

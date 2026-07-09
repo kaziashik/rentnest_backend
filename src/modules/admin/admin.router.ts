@@ -10,4 +10,6 @@ router.get("/user/:id", adminController.getSingleUser);
 router.patch("/user/:id/status", adminController.updateUserStatus);
 router.delete("/user/:id", adminController.deleteUser);
 
+router.get("/dashboard", auth(Role.ADMIN), adminController.getAdminDashboard);
+
 export const adminRouter = router;

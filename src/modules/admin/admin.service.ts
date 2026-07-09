@@ -60,10 +60,114 @@ const deleteUser = async (userId: string) => {
 };
 
 
+const getAdminDashboard = async () => {
+
+  const totalUsers = await prisma.user.count();
+
+
+  const totalTenants = await prisma.user.count({
+    where:{
+      role:"TENANT"
+    }
+  });
+
+
+  const totalLandlords = await prisma.user.count({
+    where:{
+      role:"LANDLORD"
+    }
+  });
+
+
+
+  const totalProperties = await prisma.property.count();
+
+
+  const availableProperties = await prisma.property.count({
+    where:{
+      availability :"AVAILABLE"
+    }
+  });
+
+
+  const rentedProperties = await prisma.property.count({
+    where:{
+      availability :"UNAVAILABLE"
+    }
+  });
+
+
+
+  const totalRentalRequests = await prisma.rentalRequest.count();
+
+
+
+  const pendingRequests = await prisma.rentalRequest.count({
+    where:{
+      status:"PENDING"
+    }
+  });
+
+
+  const approvedRequests = await prisma.rentalRequest.count({
+    where:{
+      status:"APPROVED"
+    }
+  });
+
+
+
+  const totalPayments = await prisma.payment.count();
+
+
+
+  const revenue = await prisma.payment.aggregate({
+    _sum:{
+      amount:true
+    },
+    where:{
+      paymentStatus:"PAID"
+    }
+  });
+
+
+
+  return {
+
+    users:{
+      total:totalUsers,
+      tenants:totalTenants,
+      landlords:totalLandlords
+    },
+
+
+    properties:{
+      total:totalProperties,
+      available:availableProperties,
+      rented:rentedProperties
+    },
+
+
+    rentalRequests:{
+      total:totalRentalRequests,
+      pending:pendingRequests,
+      approved:approvedRequests
+    },
+
+
+    payments:{
+      total:totalPayments,
+      revenue:revenue._sum?.amount || 0
+    }
+
+  };
+
+};
 
 export const adminService = {
   getAllUsers,
   getSingleUser,
   updateUserStatus,
   deleteUser,
+  getAdminDashboard
 };

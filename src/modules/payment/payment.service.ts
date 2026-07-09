@@ -1,6 +1,8 @@
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
+import { catchAsync } from "../../utils/catchAsync";
+import { NextFunction, Request, Response } from "express";
 
 const createCheckoutSession = async (requestId: string) => {
   const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
@@ -11,7 +13,7 @@ const createCheckoutSession = async (requestId: string) => {
   // Allow payment only after landlord approval
   if (rentalRequest.status !== "APPROVED") {
     throw new Error(
-      "This rental request has not been approved by the landlord."
+      "This rental request has not been approved by the landlord.",
     );
   }
 
@@ -36,6 +38,61 @@ const createCheckoutSession = async (requestId: string) => {
   return { url: session.url };
 };
 
+const getMyPayments = async (tenantId: string) => {
+  const payments = await prisma.payment.findMany({
+    where: {
+      rentalRequest: {
+        tenantId,
+      },
+    },
+
+    include: {
+      rentalRequest: {
+        include: {
+          property: {
+            select: {
+              id: true,
+              title: true,
+              location: true,
+              rentPrice: true,
+            },
+          },
+        },
+      },
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return payments;
+};
+
+const getPaymentDetails = async (paymentId: string, tenantId: string) => {
+  const payment = await prisma.payment.findFirstOrThrow({
+    where: {
+      id: paymentId,
+
+      rentalRequest: {
+        tenantId,
+      },
+    },
+
+    include: {
+      rentalRequest: {
+        include: {
+          property: true,
+        },
+      },
+    },
+  });
+
+  return payment;
+};
+
 export const paymentService = {
   createCheckoutSession,
+  getMyPayments,
+  getPaymentDetails,
 };

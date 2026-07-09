@@ -19,7 +19,7 @@ enum RentalRequentStatus {
     APPROVED
     REJECTED
     ACTIVE
-    COMPLETEDF
+    COMPLETED
 }
 
 enum paymentStatus {

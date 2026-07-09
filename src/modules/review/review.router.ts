@@ -6,8 +6,8 @@ import { auth } from "../../middlewares/auth";
 
 const router=Router()
 
-router.post("/",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),reviewController.createReview)
-router.get("/",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), reviewController.getAllReviews);
-router.get("/:id",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), reviewController.getReviewById);
+router.post("/",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),reviewController.reviewCreate)
+router.get("/tenant-reviews",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), reviewController.getReviewsByTenant );
+router.get("/:propertyId",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT), reviewController.getReviewsByProperty);
 
 export const revewRouter=router;

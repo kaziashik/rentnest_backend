@@ -4,11 +4,11 @@ import { reviewService } from "./review.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 
-const createReview = catchAsync(
+const reviewCreate = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const tenantId = req.user?.id;
     const payload = req.body;
-    const result = await reviewService.createReview(
+    const result = await reviewService.reviewCreate(
       payload,
       tenantId as string,
     );
@@ -21,8 +21,10 @@ const createReview = catchAsync(
   },
 );
 
-const getAllReviews = catchAsync(async (req: Request, res: Response) => {
-  const result = await reviewService.getAllReviews();
+const getReviewsByTenant = catchAsync(async (req: Request, res: Response) => {
+  const tenantId= req.user?.id;
+  console.log(tenantId);
+  const result = await reviewService.getReviewsByTenant(tenantId as string);
 
   sendResponse(res, {
     success: true,
@@ -32,21 +34,21 @@ const getAllReviews = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getReviewById = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
+const getReviewsByProperty = catchAsync(async (req: Request, res: Response) => {
+  const {propertyId} = req.params;
 
-  const result = await reviewService.getReviewById(id as string);
+  const result = await reviewService.getReviewsByProperty(propertyId as string);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: "Review retrieved successfully.",
+    message: "Property reviews retrieved successfully.",
     data: result,
   });
 });
 
 export const reviewController = {
-  createReview,
-  getAllReviews,
-  getReviewById,
+  reviewCreate,
+  getReviewsByTenant,
+  getReviewsByProperty,
 };

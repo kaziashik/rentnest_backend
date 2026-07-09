@@ -64,9 +64,29 @@ const deleteUser = catchAsync(
   },
 );
 
+
+const getAdminDashboard = catchAsync(
+async(req,res)=>{
+
+
+ const dashboard = await adminService.getAdminDashboard();
+
+
+
+ sendResponse(res,{
+    success:true,
+    statusCode:200,
+    message:"Admin dashboard data retrieved successfully",
+    data:dashboard
+ });
+
+
+});
+
 export const adminController = {
   getAllUsers,
   getSingleUser,
   updateUserStatus,
   deleteUser,
+  getAdminDashboard
 };

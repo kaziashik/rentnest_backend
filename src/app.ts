@@ -50,8 +50,6 @@ app.use("/api/properties",propertiesRouter)
 app.use("/api/categories", categoryRouter);
 app.use("/api/rentals",rentlRequestRouter);
 app.use("/api/review",revewRouter)
-
-// In app.ts
 app.use("/api/pay", paymentRoutes);
 
 export default app;
