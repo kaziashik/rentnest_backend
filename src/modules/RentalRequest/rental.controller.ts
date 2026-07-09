@@ -34,17 +34,22 @@ const getAllRentalRequests = catchAsync(async(req: Request,res:Response,next: Ne
 
 })
 
-const getRentalRequestById = catchAsync(async(req: Request,res:Response,next: NextFunction)=>{
-    
-    const {requestId}=req.params;
+const getRentalRequestById = catchAsync(async (req: Request, res: Response) => {
+  // 1. Extract the request ID from parameters
+  const { requestId } = req.params; 
+  
+  // 2. Extract the authenticated user from the request
+  const user = req.user as { id: string; role: string };
 
-    const result=await rentalService.getRentalRequestById(requestId as string)
-    sendResponse(res, {
-      success: true,
-      statusCode: httpsStatus.OK,
-      message: "Rental request retrieved successfully",
-      data: result,
-    });
+  // 3. Pass both the ID and the user object to the service
+  const result = await rentalService.getRentalRequestById(requestId as string, user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpsStatus.OK,
+    message: "Rental request retrieved successfully",
+    data: result,
+  });
 })
 
 // rental.controller.ts

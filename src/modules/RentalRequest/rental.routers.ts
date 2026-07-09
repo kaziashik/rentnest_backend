@@ -6,10 +6,11 @@ import { Role } from "../../../prisma/generated/prisma/enums";
 
 const router=Router()
 
-router.post("/",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.createRentalRequest)
-router.get("/requestCheck/:requestId",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.getRentalRequestById)
-router.get("/requestCheck",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.getAllRentalRequests)
+router.get("/",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.getAllRentalRequests)
 
-router.put("/requwtResponse/:id",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.updateRentalRequestStatus)
+router.get("/:requestId",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.getRentalRequestById)
+
+router.put("/:id/status",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.updateRentalRequestStatus)
+router.post("/",auth(Role.ADMIN,Role.LANDLORD,Role.TENANT),rentalController.createRentalRequest)
 
 export const rentlRequestRouter=router

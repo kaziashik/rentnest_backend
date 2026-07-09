@@ -49,10 +49,22 @@ const getAllRentalRequests = async (user: { id: string; role: string }) => {
   return result
 };
 
-const getRentalRequestById = async (rentalRequstId: string) => {
-  const result = await prisma.rentalRequest.findFirstOrThrow({
-    where: { id: rentalRequstId },
+const getRentalRequestById = async (id: string, user: { id: string; role: string }) => {
+  const where: any = { id };
+
+  // Apply the same ownership restriction used in getAllRentalRequests
+  if (user.role === 'TENANT') {
+    where.tenantId = user.id;
+  } else if (user.role === 'LANDLORD') {
+    where.property = { propertyOwnerId: user.id };
+  }
+  // Admins see all (where remains {id})
+
+  const result= await prisma.rentalRequest.findFirstOrThrow({
+    where,
+    include: { tenant: true, property: true }
   });
+
   return result;
 };
 
