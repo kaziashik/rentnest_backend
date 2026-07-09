@@ -8,6 +8,13 @@ const createCheckoutSession = async (requestId: string) => {
     include: { property: true },
   });
 
+  // Allow payment only after landlord approval
+  if (rentalRequest.status !== "APPROVED") {
+    throw new Error(
+      "This rental request has not been approved by the landlord."
+    );
+  }
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
