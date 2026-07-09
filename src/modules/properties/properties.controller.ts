@@ -5,7 +5,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpsStatus from "http-status";
 
 const createProperty = catchAsync( async (req: Request, res: Response, next: NextFunction)=>{
-    console.log(req.body);
+   
     const userId = req.user?.id as string;
     const payload = req.body;
    
@@ -40,7 +40,7 @@ const updateProperty = catchAsync(async(req:Request,res:Response,next:NextFuncti
 });
 
 const getAllProperties = catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
-    console.log(req);
+  
     const result=await propertyService.getAllProperties()
     sendResponse(res, {
       success: true,

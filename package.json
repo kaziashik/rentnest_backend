@@ -6,9 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-     "stripe:webhook": "stripe listen --forward-to localhost:5000/api/subscription/webhook",
-    "start": "node dist/server.js"
+    "build": "tsup",
+    "stripe:webhook": "stripe listen --forward-to localhost:5000/api/subscription/webhook",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +37,7 @@
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.22.0",
-    "stripe": "^22.3.0"
+    "stripe": "^22.3.0",
+    "tsup": "^8.5.1"
   }
 }

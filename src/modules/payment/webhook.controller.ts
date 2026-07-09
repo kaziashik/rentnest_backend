@@ -25,7 +25,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
 
     // Safety Check: Ensure metadata exists
     if (session.metadata?.requestId) {
-      console.log("Processing Payment for Request ID:", session.metadata.requestId);
+      // console.log("Processing Payment for Request ID:", session.metadata.requestId);
 
       await prisma.payment.create({
         data: {
