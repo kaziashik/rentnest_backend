@@ -20,9 +20,9 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
   const isUserExist = await prisma.user.findUnique({
     where: { email },
   });
-  // if (role !== "TENANT" && role !== "LANDLORD") {
-  //   throw new Error("Invalid role. Choose either TENANT or LANDLORD.");
-  // }
+  if (role !== "TENANT" && role !== "LANDLORD") {
+    throw new Error("Invalid role. Choose either TENANT or LANDLORD.");
+  }
 
   if (isUserExist) {
     throw new Error("User with this email already exists");
@@ -66,9 +66,9 @@ const getMyprofileDB = async (userId : any) => {
 const updateMyProfileDB = async (userId: string, payload: any) => {
   const { name, email, password, role, phone } = payload;
 
-  //   if (role !== "TENANT" && role !== "LANDLORD") {
-  //   throw new Error("Invalid role. Choose either TENANT or LANDLORD.");
-  // }
+    if (role !== "TENANT" && role !== "LANDLORD") {
+    throw new Error("Invalid role. Choose either TENANT or LANDLORD only choose for for update.");
+  }
   
   const hashPassword = await bcrypt.hash(
     password,

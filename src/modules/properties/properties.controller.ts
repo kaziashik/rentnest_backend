@@ -39,16 +39,24 @@ const updateProperty = catchAsync(async(req:Request,res:Response,next:NextFuncti
     });
 });
 
-const getAllProperties = catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
-  
-    const result=await propertyService.getAllProperties()
+
+const getAllProperties = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const filters = req.query;
+
+    const result = await propertyService.getAllProperties(filters);
+
+
     sendResponse(res, {
       success: true,
-      statusCode: httpsStatus.OK,
-      message: "properties  retrive successfully ",
+      statusCode: 200,
+      message: "Properties retrieved successfully",
       data: result,
     });
-})
+
+  }
+);
 
 const getPropertyById = catchAsync(async(req:Request,res:Response,next:NextFunction)=>{
     const {propertyId}=req.params;

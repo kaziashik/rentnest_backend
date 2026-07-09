@@ -21,27 +21,32 @@ export const globalErrorHandler = (
     errorMessage = "you have Provided incorret fild type or missing fields";
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === "P2002") {
-      statusCode = httpsStatus.BAD_REQUEST,
-        errorMessage = "Duplicate Key Error";
+      ((statusCode = httpsStatus.BAD_REQUEST),
+        (errorMessage = "Duplicate Key Error"));
     } else if (err.code === "P2003") {
-      statusCode = httpsStatus.BAD_REQUEST,
-        errorMessage = "Foreign key constraint failed";
-    } else if (err.code === "2025") {
-      statusCode = httpsStatus.BAD_REQUEST,
-        errorMessage ="An operation Faild because it depends on one or more records that were requered bt not found ";
+      ((statusCode = httpsStatus.BAD_REQUEST),
+        (errorMessage = "Foreign key constraint failed"));
+    } else if (err.code === "P2025") {
+      ((statusCode = httpsStatus.BAD_REQUEST),
+        (errorMessage =
+          "An operation Faild because it depends on one or more records that were requered bt not found "));
+    }
+    if (err.code === "P2025") {
+      errorMessage =
+        "The requested resource was not found. Please check the ID.";
     }
   } else if (err instanceof Prisma.PrismaClientInitializationError) {
-    if(err.errorCode==="P1000"){
-        statusCode = httpsStatus.UNAUTHORIZED,
-      errorMessage = "Authentication Failed against database server. please check your credentials";
-    }else if(err.errorCode==="P1001"){
-
-        statusCode = httpsStatus.BAD_REQUEST,
-      errorMessage = "can not reach databse server";
+    if (err.errorCode === "P1000") {
+      ((statusCode = httpsStatus.UNAUTHORIZED),
+        (errorMessage =
+          "Authentication Failed against database server. please check your credentials"));
+    } else if (err.errorCode === "P1001") {
+      ((statusCode = httpsStatus.BAD_REQUEST),
+        (errorMessage = "can not reach databse server"));
     }
-  }else if(err instanceof Prisma.PrismaClientUnknownRequestError){
-    statusCode = httpsStatus.INTERNAL_SERVER_ERROR,
-      errorMessage = "Error Occured During Query Execution ";
+  } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+    ((statusCode = httpsStatus.INTERNAL_SERVER_ERROR),
+      (errorMessage = "Error Occured During Query Execution "));
   }
   res.status(httpsStatus.INTERNAL_SERVER_ERROR).json({
     success: false,

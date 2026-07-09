@@ -46,6 +46,10 @@ const getAllRentalRequests = async (user: { id: string; role: string }) => {
     orderBy: { createdAt: "desc" },
   });
 
+   if (result.length === 0) {
+    throw new Error("No rental requests found.");
+  }
+
   return result;
 };
 

@@ -14,6 +14,8 @@ import { paymentRoutes } from "./modules/payment/payment.router";
 
 
 import { stripeWebhook } from "./modules/payment/webhook.controller";
+import { globalErrorHandler } from "./middlewares/globalErrorhandler";
+import { notFound } from "./middlewares/notFound";
 
 
 // import { userRoutes } from "./modules/user/user.route";
@@ -33,7 +35,6 @@ app.post("/api/subscription/webhook", express.raw({ type: "application/json" }),
 
 
 // Middleware
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -51,5 +52,11 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/rentals",rentlRequestRouter);
 app.use("/api/review",revewRouter)
 app.use("/api/pay", paymentRoutes);
+
+
+
+// Global error handler 
+app.use(notFound);
+app.use(globalErrorHandler);
 
 export default app;

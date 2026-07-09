@@ -66,17 +66,16 @@ const getMyPayments = async (tenantId: string) => {
     },
   });
 
+  if (payments.length === 0) {
+    throw new Error("You Don't Have Any paymanet history");
+  }
   return payments;
 };
 
-const getPaymentDetails = async (paymentId: string, tenantId: string) => {
+const getPaymentDetailsById = async (paymentId: string) => {
   const payment = await prisma.payment.findFirstOrThrow({
     where: {
       id: paymentId,
-
-      rentalRequest: {
-        tenantId,
-      },
     },
 
     include: {
@@ -94,5 +93,5 @@ const getPaymentDetails = async (paymentId: string, tenantId: string) => {
 export const paymentService = {
   createCheckoutSession,
   getMyPayments,
-  getPaymentDetails,
+  getPaymentDetailsById,
 };

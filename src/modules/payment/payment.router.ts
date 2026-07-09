@@ -14,7 +14,6 @@ router.post(
 );
 
 router.get("/", auth(Role.TENANT), paymentController.getMyPayments);
-
-router.get("/:id", auth(Role.TENANT), paymentController.getPaymentDetails);
+router.get("/:id", auth(Role.TENANT, Role.ADMIN, Role.LANDLORD), paymentController.getPaymentDetailsById );
 
 export const paymentRoutes = router;

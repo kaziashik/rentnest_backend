@@ -7,7 +7,7 @@ import { paymentService } from "./payment.service";
 const createCheckoutSession = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { requestId } = req.body;
-    console.log(requestId);
+    // console.log(requestId);
     const result = await paymentService.createCheckoutSession(
       requestId as string,
     );
@@ -24,7 +24,7 @@ const createCheckoutSession = catchAsync(
 const getMyPayments = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
-    console.log(userId);
+  
 
     const result = await paymentService.getMyPayments(userId as string);
 
@@ -37,12 +37,12 @@ const getMyPayments = catchAsync(
   },
 );
 
-const getPaymentDetails = catchAsync(async (req: Request, res: Response, next: NextFunction) =>{
+const getPaymentDetailsById = catchAsync(async (req: Request, res: Response, next: NextFunction) =>{
   const userId = req.user?.id;
 
   const { id } = req.params;
 
-  const result = await paymentService.getPaymentDetails(id as string, userId as string);
+  const result = await paymentService.getPaymentDetailsById(id as string);
 
   sendResponse(res, {
     success: true,
@@ -58,5 +58,5 @@ const getPaymentDetails = catchAsync(async (req: Request, res: Response, next: N
 export const paymentController = {
   createCheckoutSession,
   getMyPayments,
-  getPaymentDetails,
+  getPaymentDetailsById ,
 };

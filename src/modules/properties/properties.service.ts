@@ -1,23 +1,26 @@
 import { Prisma } from "../../../prisma/generated/prisma/client";
 import { AvailabilityStatus } from "../../../prisma/generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
+import { IProperty } from "./properties.interface";
 
-interface IProperty {
-  categoryId: string;
-  title: string;
-  location: string;
-  rentPrice: number;
-  bedRooms: number;
-  bathRooms: number;
-  fetures: Prisma.InputJsonValue;
-  availability?: AvailabilityStatus;
-  property_image?: Prisma.InputJsonValue;
-}
 
-const createProperty = async (userId: string, paylod: IProperty) => {
+
+const createProperty = async (userId: string, payload: IProperty) => {
+
+
+  if (payload.categoryId) {
+    const categoryExists = await prisma.category.findUnique({
+      where: { id: payload.categoryId },
+    });
+
+    if (!categoryExists) {
+      throw new Error(`The category you selected does not exist.`);
+    }
+  }
+
   const result = await prisma.property.create({
     data: {
-      ...paylod,
+      ...payload,
       propertyOwnerId: userId,
     },
      include: {
@@ -38,98 +41,212 @@ const createProperty = async (userId: string, paylod: IProperty) => {
   return result;
 };
 
+
+const getAllProperties = async (query:any) => {
+
+  const {
+    location,
+    minPrice,
+    maxPrice,
+    category,
+    sort,
+    page = "1",
+    limit = "10"
+  } = query;
+
+
+  const skip =
+    (Number(page)-1) * Number(limit);
+
+
+
+  const properties = await prisma.property.findMany({
+
+    where:{
+
+
+      ...(location && {
+        location:{
+          contains:location,
+          mode:"insensitive"
+        }
+      }),
+
+
+      ...(minPrice && {
+        rentPrice:{
+          gte:Number(minPrice)
+        }
+      }),
+
+
+      ...(maxPrice && {
+        rentPrice:{
+          lte:Number(maxPrice)
+        }
+      }),
+
+
+      ...(category && {
+        category:{
+          name:{
+            equals:category,
+            mode:"insensitive"
+          }
+        }
+      })
+
+
+    },
+
+
+    include:{
+
+      category:{
+        select:{
+          name:true
+        }
+      },
+
+
+      propertyOwner:{
+        select:{
+          name:true,
+          email:true,
+          phone:true
+        }
+      }
+
+    },
+
+
+    orderBy:
+      sort === "price_asc"
+      ? {
+          rentPrice:"asc"
+        }
+      :
+      sort === "price_desc"
+      ? {
+          rentPrice:"desc"
+        }
+      :
+      {
+        createdAt:"desc"
+      },
+
+
+    skip,
+
+    take:Number(limit)
+
+  });
+
+
+
+  const total =
+    await prisma.property.count({
+      where:{
+        ...(location && {
+          location:{
+            contains:location,
+            mode:"insensitive"
+          }
+        })
+      }
+    });
+
+
+
+  return {
+
+    meta:{
+      page:Number(page),
+      limit:Number(limit),
+      total
+    },
+
+    data:properties
+
+  };
+
+};
+
+
 const updateProperty = async (
   payload: IProperty,
   propertyId: string,
   user: { id: string; role: string },
 ) => {
 
-  const property = await prisma.property.findUniqueOrThrow({
-    where: {
-      id: propertyId,
-    },
-  });
 
-
-  // Landlord can update only their own property
-  if (
-    user.role === "LANDLORD" &&
-    property.propertyOwnerId !== user.id
-  ) {
-    throw new Error("You are not allowed to update this property");
+  let property;
+  try {
+    property = await prisma.property.findUniqueOrThrow({
+      where: { id: propertyId },
+    });
+  } catch (error) {
+    throw new Error("Property not found. Please check the ID and try again.");
   }
 
+  
 
-  // Tenant cannot update property
+
   if (user.role === "TENANT") {
     throw new Error("Tenant cannot update property");
   }
 
+  if (user.role === "LANDLORD" && property.propertyOwnerId !== user.id) {
+    throw new Error("You are not allowed to update this property");
+  }
 
-  const result = await prisma.property.update({
-    where: {
-      id: propertyId,
-    },
+
+  if (payload.categoryId) {
+    const categoryExists = await prisma.category.findUnique({
+      where: { id: payload.categoryId },
+    });
+
+    if (!categoryExists) {
+      throw new Error(`The category you selected does not exist.`);
+    }
+  }
+
+
+  return await prisma.property.update({
+    where: { id: propertyId },
     data: payload,
     include: {
-      category: {
-        select: {
-          name: true,
-        },
-      },
-      propertyOwner: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-        },
-      },
+      category: { select: { name: true } },
+      propertyOwner: { select: { name: true, email: true, phone: true } },
     },
   });
-
-
-  return result;
 };
 
-const getAllProperties = async () => {
-  const gettAllProperty = await prisma.property.findMany({
-    include: {
-      category: {
-        select: {
-          name: true,
-        },
-      },
-      propertyOwner: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-        },
-      },
-    },
-  });
-  return gettAllProperty;
-};
 
 const getPropertyById = async (propertyId: string) => {
-  const result = await prisma.property.findFirstOrThrow({
-    where: { id: propertyId },
-    include: {
-      category: {
-        select: {
-          name: true,
+  try {
+    const result = await prisma.property.findUniqueOrThrow({
+      where: { id: propertyId },
+      include: {
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        propertyOwner: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
         },
       },
-      propertyOwner: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-        },
-      },
-    },
-  });
-  return result;
+    });
+
+    return result;
+  } catch (error) {
+    throw new Error("Property not found. Please check the ID and try again.");
+  }
 };
 
 const getPropertyCategories = async () => {
@@ -146,41 +263,35 @@ const deleteProperty = async (
   propertyId: string,
   user: { id: string; role: string },
 ) => {
-
-  const property = await prisma.property.findUniqueOrThrow({
-    where: {
-      id: propertyId,
-    },
+ const hasRentalRequests = await prisma.rentalRequest.findFirst({
+    where: { propertyId: propertyId },
   });
 
-
-  // Landlord can delete only their own property
-  if (
-    user.role === "LANDLORD" &&
-    property.propertyOwnerId !== user.id
-  ) {
-    throw new Error(
-      "You are not allowed to delete this property."
-    );
+  if (hasRentalRequests) {
+    throw new Error("sorry Cannot delete this property because it has existing rental requests Contect with Admin.");
+  }
+  let property;
+  try {
+    property = await prisma.property.findUniqueOrThrow({
+      where: { id: propertyId },
+    });
+  } catch (error) {
+    throw new Error("Property not found. Unable to delete.");
   }
 
-
-  // Tenant cannot delete property
+  // 2. Authorization checks
   if (user.role === "TENANT") {
-    throw new Error(
-      "Tenant cannot delete property."
-    );
+    throw new Error("Tenant cannot delete property.");
   }
 
+  if (user.role === "LANDLORD" && property.propertyOwnerId !== user.id) {
+    throw new Error("You are not allowed to delete this property.");
+  }
 
-  const result = await prisma.property.delete({
-    where: {
-      id: propertyId,
-    },
+  // 3. Perform the delete
+  return await prisma.property.delete({
+    where: { id: propertyId },
   });
-
-
-  return result;
 };
 
 export const propertyService = {
