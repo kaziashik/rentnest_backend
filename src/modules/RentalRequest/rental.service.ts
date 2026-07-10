@@ -2,6 +2,17 @@ import { RentalRequentStatus } from "../../../prisma/generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { IRequest } from "./rental.interface";
 
+
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["APPROVED", "REJECTED"],
+  APPROVED: ["ACTIVE"],
+  ACTIVE: ["COMPLETED"],
+  REJECTED: [],
+  COMPLETED: [],
+};
+
+
+
 const createRentalRequest = async (payload: IRequest, tenantId: string) => {
   const property = await prisma.property.findUnique({
     where: { id: payload.propertyId },
@@ -123,10 +134,19 @@ const updateRentalRequestStatus = async (
 ) => {
   const where: any = { id };
 
-  // Only add this filter if a Landlord is logged in
-
   if (user.role === "LANDLORD") {
     where.property = { propertyOwnerId: user.id };
+  }
+
+  const current = await prisma.rentalRequest.findFirstOrThrow({ where }).catch(() => {
+    throw new Error( "Rental request not found.");
+  });
+
+  const allowedNext = ALLOWED_TRANSITIONS[current.status] || [];
+  if (!allowedNext.includes(status)) {
+    throw new Error(
+      `Cannot change status from ${current.status} to ${status}. have to pay or need to End the rental date`,
+    );
   }
   // If an Admin is logged in, the 'where' object is JUST { id }
   // This allows the Admin to bypass the owner check.
@@ -135,6 +155,14 @@ const updateRentalRequestStatus = async (
     where,
     data: { status },
   });
+
+  // when approved, take the property off the market so it can't be double-booked
+  if (status === "APPROVED") {
+    await prisma.property.update({
+      where: { id: current.propertyId },
+      data: { availability: "UNAVAILABLE" },
+    });
+  }
   return result;
 };
 
