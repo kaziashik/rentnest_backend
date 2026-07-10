@@ -32,6 +32,10 @@ const updateUserStatus = async (
   activeStatus: UserStatus
 ) => {
 
+  if (activeStatus !== "ACTIVE" && activeStatus !== "BANNED") {
+    throw new Error( "activeStatus must be either ACTIVE or BANNED.");
+  }
+
   const updatedUser = await prisma.user.update({
     where: {
       id: userId,
