@@ -3,20 +3,28 @@ import { prisma } from "../../lib/prisma";
 import { IRequest } from "./rental.interface";
 
 const createRentalRequest = async (payload: IRequest, tenantId: string) => {
-
-
-  // Check if this tenant already requested this property
+  const property = await prisma.property.findUnique({
+    where: { id: payload.propertyId },
+  });
+  if (!property) {
+    throw new Error("Property not found");
+  }
+  if (property.availability !== "AVAILABLE") {
+    throw new Error("This Property is Not currently available.");
+  }
   const existingRequest = await prisma.rentalRequest.findFirst({
     where: {
       tenantId,
       propertyId: payload.propertyId,
+      status: { in: ["PENDING", "APPROVED", "ACTIVE"] },
     },
   });
 
   if (existingRequest) {
-    throw new Error("You have already submitted a rental request for this property, plz wait for Approval by woner.");
+    throw new Error(
+      "You already have an active request for this property. Please wait for a decision.",
+    );
   }
-
 
   const request = await prisma.rentalRequest.create({
     data: {
@@ -73,10 +81,6 @@ const getAllRentalRequests = async (user: { id: string; role: string }) => {
     },
     orderBy: { createdAt: "desc" },
   });
-
-  if (result.length === 0) {
-    throw new Error("No rental requests found.");
-  }
 
   return result;
 };

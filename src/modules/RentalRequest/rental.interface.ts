@@ -4,5 +4,5 @@ export interface IRequest {
   propertyId: string;
   message?: string;
   moveInDate: Date;
-  status: RentalRequentStatus;
+  // status: RentalRequentStatus;
 }

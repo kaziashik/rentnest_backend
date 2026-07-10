@@ -210,11 +210,34 @@ const updateProperty = async (
       throw new Error(`The category you selected does not exist.`);
     }
   }
+const {
+    title,
+    location,
+    rentPrice,
+    bedRooms,
+    bathRooms,
+    fetures,
+    availability,
+    property_image,
+    categoryId,
+  } = payload;
 
+  const data: Record<string, any> = {};
+  if (title !== undefined) data.title = title;
+  if (location !== undefined) data.location = location;
+  if (rentPrice !== undefined) data.rentPrice = rentPrice;
+  if (bedRooms !== undefined) data.bedRooms = bedRooms;
+  if (bathRooms !== undefined) data.bathRooms = bathRooms;
+  if (fetures !== undefined) data.fetures = fetures;
+  if (availability !== undefined) data.availability = availability;
+  if (property_image !== undefined) data.property_image = property_image;
+  if (categoryId !== undefined) data.categoryId = categoryId;
+  // propertyOwnerId is deliberately never accepted here — ownership can't be
+  // changed through this endpoint at all
 
   return await prisma.property.update({
     where: { id: propertyId },
-    data: payload,
+    data: data,
     include: {
       category: { select: { name: true } },
       propertyOwner: { select: { name: true, email: true, phone: true } },
