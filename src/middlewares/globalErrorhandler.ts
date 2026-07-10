@@ -48,7 +48,7 @@ export const globalErrorHandler = (
     ((statusCode = httpsStatus.INTERNAL_SERVER_ERROR),
       (errorMessage = "Error Occured During Query Execution "));
   }
-  res.status(httpsStatus.INTERNAL_SERVER_ERROR).json({
+  res.status(statusCode || httpsStatus.INTERNAL_SERVER_ERROR).json({
     success: false,
     StatusCodes: statusCode || httpsStatus.INTERNAL_SERVER_ERROR,
     name: errorNmae,

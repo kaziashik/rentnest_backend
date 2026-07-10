@@ -4,19 +4,27 @@ import config from "../../config";
 import { catchAsync } from "../../utils/catchAsync";
 import { NextFunction, Request, Response } from "express";
 
-const createCheckoutSession = async (requestId: string) => {
+const createCheckoutSession = async (requestId: string, tenantId: string) => {
   const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
     where: { id: requestId },
     include: { property: true },
   });
 
-  // Allow payment only after landlord approval
+  if(!rentalRequest){
+    throw new Error("Retal Request Not found.")
+  }
+  if(rentalRequest.tenantId !==tenantId){
+    throw new Error("This is not your rental Request.")
+  }
+
   if (rentalRequest.status !== "APPROVED") {
     throw new Error(
       "This rental request has not been approved by the landlord plz wait for approve or contat admin.",
     );
   }
 
+
+  //creat the payment session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
@@ -37,6 +45,9 @@ const createCheckoutSession = async (requestId: string) => {
 
   return { url: session.url };
 };
+
+
+
 
 const getMyPayments = async (tenantId: string) => {
   const payments = await prisma.payment.findMany({
@@ -72,12 +83,11 @@ const getMyPayments = async (tenantId: string) => {
   return payments;
 };
 
-const getPaymentDetailsById = async (paymentId: string) => {
+const getPaymentDetailsById = async (paymentId: string, user: { id: string; role: string }) => {
   const payment = await prisma.payment.findFirstOrThrow({
     where: {
       id: paymentId,
     },
-
     include: {
       rentalRequest: {
         include: {
@@ -86,6 +96,18 @@ const getPaymentDetailsById = async (paymentId: string) => {
       },
     },
   });
+
+   if (!payment ){
+    throw new Error( "Payment not found.");
+    }
+
+    const isOWner=payment.rentalRequest.tenantId===user.id;
+    const islandlordOfProperty=payment.rentalRequest.property.propertyOwnerId===user.id;
+
+    if(user.role !=="ADMIN" && !isOWner && !islandlordOfProperty){
+       throw new Error( "You are not allowed to view this payment.");
+    }
+    
 
   return payment;
 };

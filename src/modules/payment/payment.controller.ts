@@ -7,9 +7,10 @@ import { paymentService } from "./payment.service";
 const createCheckoutSession = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { requestId } = req.body;
+    const userId=req.user?.id;
     // console.log(requestId);
     const result = await paymentService.createCheckoutSession(
-      requestId as string,
+      requestId as string, userId as string
     );
 
     sendResponse(res, {
@@ -38,11 +39,10 @@ const getMyPayments = catchAsync(
 );
 
 const getPaymentDetailsById = catchAsync(async (req: Request, res: Response, next: NextFunction) =>{
-  const userId = req.user?.id;
-
+   const user = req.user as { id: string; role: string };
   const { id } = req.params;
 
-  const result = await paymentService.getPaymentDetailsById(id as string);
+  const result = await paymentService.getPaymentDetailsById(id as string, user);
 
   sendResponse(res, {
     success: true,
