@@ -29,7 +29,7 @@ export const globalErrorHandler = (
     } else if (err.code === "P2025") {
       ((statusCode = httpsStatus.BAD_REQUEST),
         (errorMessage =
-          "An operation Faild because it depends on one or more records that were requered bt not found "));
+          "An operation Faild because it depends on one or more records that were requered but not found "));
     }
     if (err.code === "P2025") {
       errorMessage =

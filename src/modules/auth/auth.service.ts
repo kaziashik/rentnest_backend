@@ -4,15 +4,19 @@ import { jwtutils } from "../../utils/jwt";
 import config from "../../config";
 import { SignOptions } from "jsonwebtoken";
 import { ILoginuser } from "./auth.interface";
+import { error } from "node:console";
 
 
 
 const logInUser=async(payload: ILoginuser)=>{
     const {email,password}=payload;
 
-    const user=await prisma.user.findFirstOrThrow({
+    const user=await prisma.user.findFirst({
         where: {email},
     })
+    if (!user) {
+    throw new Error( "Invalid email or password.");
+  }
 
     if(user.activeStatus==="BANNED"){
         throw new Error("your Account has been blocked.plz contest support");

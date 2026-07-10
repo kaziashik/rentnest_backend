@@ -10,7 +10,7 @@ import { auth } from "../../middlewares/auth";
 const router=Router()
 
 router.post("/",auth(Role.ADMIN, Role.LANDLORD),catagoryController.creatPropertyCategorie);
-router.get("/",auth(Role.ADMIN, Role.LANDLORD),catagoryController.getPropertyCategories)
+router.get("/",catagoryController.getPropertyCategories)
 router.put("/:id",auth(Role.ADMIN, Role.LANDLORD),catagoryController.updatePropertyCategorie)
 router.delete("/:id",auth(Role.ADMIN, Role.LANDLORD),catagoryController.deletPropertyCategorie)
 

@@ -41,7 +41,7 @@ const reviewCreate = async (payload: IReview, tenantId: string) => {
 
 const getReviewsByTenant = async ( tenantId: string) => {
   const result = await prisma.review.findMany({
-    where:{id: tenantId},
+    where:{tenantId},
     include: {
       property:
       {
