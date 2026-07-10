@@ -18,6 +18,10 @@ const reviewCreate = async (payload: IReview, tenantId: string) => {
       throw new Error("You can only review a property after the rental has been completed.");
     }
 
+    if (rentalRequest.propertyId !== payload.propertyId) {
+      throw new Error( "This rental request doesn't match the given property.");
+    }
+
     
     const existingReview = await tx.review.findUnique({
       where: { requestId: payload.requestId },
