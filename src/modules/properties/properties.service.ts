@@ -4,38 +4,58 @@ import { prisma } from "../../lib/prisma";
 import { IProperty } from "./properties.interface";
 
 
-
 const createProperty = async (userId: string, payload: IProperty) => {
+  const {
+    categoryId,
+    title,
+    location,
+    rentPrice,
+    bedRooms,
+    bathRooms,
+    fetures,
+    availability,
+    property_image,
+  } = payload;
+
+  // required fields
+  if (!categoryId || !title || !location) {
+    throw new Error("title, location, and categoryId are required.");
+  }
+
+  if (rentPrice === undefined || isNaN(Number(rentPrice)) || Number(rentPrice) <= 0) {
+    throw new Error("rentPrice must be a positive number.");
+  }
+
+  if (bedRooms === undefined || isNaN(Number(bedRooms)) || Number(bedRooms) < 0) {
+    throw new Error("bedRooms must be a valid non-negative number.");
+  }
+
+  if (bathRooms === undefined || isNaN(Number(bathRooms)) || Number(bathRooms) < 0) {
+    throw new Error("bathRooms must be a valid non-negative number.");
+  }
 
 
-  if (payload.categoryId) {
-    const categoryExists = await prisma.category.findUnique({
-      where: { id: payload.categoryId },
-    });
-
-    if (!categoryExists) {
-      throw new Error(`The category you selected does not exist.`);
-    }
+  const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
+  if (!categoryExists) {
+    throw new Error("The category you selected does not exist.");
   }
 
   const result = await prisma.property.create({
     data: {
-      ...payload,
-      propertyOwnerId: userId,
+      categoryId,
+      title,
+      location,
+      rentPrice: Number(rentPrice),
+      bedRooms: Number(bedRooms),
+      bathRooms: Number(bathRooms),
+      fetures,
+      availability,
+      property_image,
+      propertyOwnerId: userId, // still safe — comes from the authenticated user, not the body
     },
-     include: {
-      category: {
-        select: {
-          name: true,
-        },
-      },
-      propertyOwner: {
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-        },
-      },
+    include: {
+      category: { select: { name: true } },
+      propertyOwner: { select: { name: true, email: true, phone: true } },
     },
   });
   return result;

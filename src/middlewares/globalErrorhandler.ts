@@ -47,6 +47,9 @@ export const globalErrorHandler = (
   } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
     ((statusCode = httpsStatus.INTERNAL_SERVER_ERROR),
       (errorMessage = "Error Occured During Query Execution "));
+  }else if (err instanceof SyntaxError && "body" in err) {   
+    statusCode = httpsStatus.BAD_REQUEST;
+    errorMessage = "Invalid JSON in request body. Please check your syntax.";
   }
   res.status(statusCode || httpsStatus.INTERNAL_SERVER_ERROR).json({
     success: false,
