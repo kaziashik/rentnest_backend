@@ -519,6 +519,88 @@ A review can only be created once its associated rental request has reached stat
 
 ## 9. Flow Diagrams
 
+<a id="sequence-diagram"></a>
+## 📜 Sequence Diagram
+
+This shows the same flow as a timeline of messages between the tenant, the platform, the landlord, the payment gateway, and the admin.
+
+```mermaid
+sequenceDiagram
+    participant T as Tenant (Himu)
+    participant R as RentNest
+    participant L as Landlord (Taher)
+    participant P as Payment Gateway
+    participant A as Admin (Ashik)
+
+    T->>R: Browse properties
+    T->>R: View property details
+    T->>L: Submit rental request
+    L->>L: Review request<br/>(profile, history, reviews)
+    L->>T: Approve request
+    T->>P: Make payment (Stripe / SSLCommerz)
+    P->>T: Payment successful
+    Note over T,L: Rental status becomes CONFIRMED
+    T->>L: Leave review
+    R->>A: Monitor system activity
+```
+
+[⬆ Back to top](#top)
+
+---
+
+<a id="website-flowchart"></a>
+## 🌐 Website Flowchart
+
+This is the full site-level flow, showing what each role can do after logging in.
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Open[Open RentNest Website]
+    Open --> Auth[Register / Login]
+    Auth --> Role{Select User Role}
+
+    Role --> Tenant[Tenant]
+    Role --> Landlord[Landlord]
+    Role --> Admin[Admin]
+
+    Tenant --> T1[Browse Listings]
+    T1 --> T2[Search Property]
+    T2 --> T3[View Details]
+    T3 --> T4[Submit Request]
+
+    Landlord --> L1[Create Listing]
+    L1 --> L2[Edit Listing]
+    L2 --> L3[Delete Listing]
+    L3 --> L4[Receive Request]
+
+    Admin --> A1[Manage Users]
+    A1 --> A2[Manage Listings]
+    A2 --> A3[Manage Categories]
+    A3 --> A4[Monitor Requests]
+
+    T4 --> Decision{Approved?}
+    L4 --> Decision
+
+    Decision -->|No| End1([Request Ends])
+    Decision -->|Yes| Pay[Payment]
+    Pay --> Gateway[Stripe / SSLCommerz]
+    Gateway --> Success[Payment Successful]
+    Success --> Confirmed[Rental Confirmed]
+    Confirmed --> Review[Leave Review]
+    Review --> End2([End])
+```
+
+[⬆ Back to top](#top)
+
+---
+
+<a id="erd"></a>
+## 🗄️ ERD (Entity Relationship Diagram)
+
+[![RentNest Database Diagram](./ERD_RentNestdrawSQL.webp)](https://drawsql.app/teams/kazi-ashikur/diagrams/rentnest#)
+
+🔗 **Live diagram (drawSQL):** https://drawsql.app/teams/kazi-ashikur/diagrams/rentnest
+
 ### 🏠 Tenant Journey
 
 ```mermaid
