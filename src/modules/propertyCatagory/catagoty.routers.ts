@@ -9,9 +9,9 @@ import { auth } from "../../middlewares/auth";
 
 const router=Router()
 
-router.post("/",catagoryController.creatPropertyCategorie);
-router.get("/",auth(Role.ADMIN),catagoryController.getPropertyCategories)
-router.put("/:id",auth(Role.ADMIN),catagoryController.updatePropertyCategorie)
-router.delete("/:id",auth(Role.ADMIN),catagoryController.deletPropertyCategorie)
+router.get("/", catagoryController.getPropertyCategories); 
+router.post("/", auth(Role.ADMIN), catagoryController.creatPropertyCategorie); 
+router.put("/:id", auth(Role.ADMIN), catagoryController.updatePropertyCategorie); 
+router.delete("/:id", auth(Role.ADMIN), catagoryController.deletPropertyCategorie); 
 
 export const categoryRouter=router;
