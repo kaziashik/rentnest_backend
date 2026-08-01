@@ -61,10 +61,10 @@ const createProperty = async (userId: string, payload: IProperty) => {
   return result;
 };
 
-
 const getAllProperties = async (query:any) => {
 
   const {
+    title,
     location,
     minPrice,
     maxPrice,
@@ -79,46 +79,49 @@ const getAllProperties = async (query:any) => {
     (Number(page)-1) * Number(limit);
 
 
+  const whereClause = {
+
+    ...(title && {
+      title:{
+        contains:title,
+        mode:"insensitive"
+      }
+    }),
+
+    ...(location && {
+      location:{
+        contains:location,
+        mode:"insensitive"
+      }
+    }),
+
+    ...(minPrice && {
+      rentPrice:{
+        gte:Number(minPrice)
+      }
+    }),
+
+    ...(maxPrice && {
+      rentPrice:{
+        lte:Number(maxPrice)
+      }
+    }),
+
+    ...(category && {
+      category:{
+        name:{
+          equals:category,
+          mode:"insensitive"
+        }
+      }
+    })
+
+  };
+
 
   const properties = await prisma.property.findMany({
 
-    where:{
-
-
-      ...(location && {
-        location:{
-          contains:location,
-          mode:"insensitive"
-        }
-      }),
-
-
-      ...(minPrice && {
-        rentPrice:{
-          gte:Number(minPrice)
-        }
-      }),
-
-
-      ...(maxPrice && {
-        rentPrice:{
-          lte:Number(maxPrice)
-        }
-      }),
-
-
-      ...(category && {
-        category:{
-          name:{
-            equals:category,
-            mode:"insensitive"
-          }
-        }
-      })
-
-
-    },
-
+    where: whereClause,
 
     include:{
 
@@ -166,14 +169,7 @@ const getAllProperties = async (query:any) => {
 
   const total =
     await prisma.property.count({
-      where:{
-        ...(location && {
-          location:{
-            contains:location,
-            mode:"insensitive"
-          }
-        })
-      }
+      where: whereClause
     });
 
 
