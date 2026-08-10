@@ -164,13 +164,22 @@ const updateRentalRequestStatus = async (
     data: { status },
   });
 
-  // when approved, take the property off the market so it can't be double-booked
-  if (status === "APPROVED") {
+  // when approved/active, take the property off the market so it can't be double-booked
+  if (status === "APPROVED" || status === "ACTIVE") {
     await prisma.property.update({
       where: { id: current.propertyId },
       data: { availability: "UNAVAILABLE" },
     });
   }
+
+  // when rental ends, list the property again
+  if (status === "COMPLETED") {
+    await prisma.property.update({
+      where: { id: current.propertyId },
+      data: { availability: "AVAILABLE" },
+    });
+  }
+
   return result;
 };
 
