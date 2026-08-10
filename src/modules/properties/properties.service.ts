@@ -120,72 +120,91 @@ const getAllProperties = async (query:any) => {
 
 
   const properties = await prisma.property.findMany({
-
     where: whereClause,
-
-    include:{
-
-      category:{
-        select:{
-          name:true
-        }
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
       },
-
-
-      propertyOwner:{
-        select:{
-          name:true,
-          email:true,
-          phone:true
-        }
-      }
-
+      propertyOwner: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      rentalRequests: {
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          tenant: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
-
-
     orderBy:
       sort === "price_asc"
-      ? {
-          rentPrice:"asc"
-        }
-      :
-      sort === "price_desc"
-      ? {
-          rentPrice:"desc"
-        }
-      :
-      {
-        createdAt:"desc"
-      },
-
-
+        ? { rentPrice: "asc" }
+        : sort === "price_desc"
+          ? { rentPrice: "desc" }
+          : { createdAt: "desc" },
     skip,
-
-    take:Number(limit)
-
+    take: Number(limit),
   });
 
+  const data = properties.map((property) => {
+    const requests = property.rentalRequests ?? [];
+    const activeRequest = requests.find((r) => r.status === "ACTIVE");
+    const approvedRequest = requests.find((r) => r.status === "APPROVED");
+    const completedCount = requests.filter((r) => r.status === "COMPLETED").length;
+    const currentTenant =
+      activeRequest?.tenant || approvedRequest?.tenant || null;
 
+    const { rentalRequests, ...rest } = property;
 
-  const total =
-    await prisma.property.count({
-      where: whereClause
-    });
+    return {
+      ...rest,
+      rentalSummary: {
+        totalRequests: requests.length,
+        timesRented: completedCount,
+        activeCount: requests.filter((r) => r.status === "ACTIVE").length,
+        approvedCount: requests.filter((r) => r.status === "APPROVED").length,
+        pendingCount: requests.filter((r) => r.status === "PENDING").length,
+        currentStatus: activeRequest
+          ? "ACTIVE"
+          : approvedRequest
+            ? "APPROVED"
+            : completedCount > 0
+              ? "COMPLETED"
+              : requests.some((r) => r.status === "PENDING")
+                ? "PENDING"
+                : null,
+        currentTenant,
+      },
+    };
+  });
 
-
+  const total = await prisma.property.count({
+    where: whereClause,
+  });
 
   return {
-
-    meta:{
-      page:Number(page),
-      limit:Number(limit),
-      total
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
     },
-
-    data:properties
-
+    data,
   };
-
 };
 
 
