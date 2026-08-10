@@ -22,9 +22,20 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
     );
   }
 
-  const appUrl =
+  let appUrl =
     config.app_url?.replace(/\/$/, "") ||
     "https://rentnest-frontend-theta.vercel.app";
+
+  // Guard against misconfigured APP_URL values like ".../success"
+  appUrl = appUrl
+    .replace(/\/payment\/success$/i, "")
+    .replace(/\/success$/i, "")
+    .replace(/\/$/, "");
+
+  // Always land on /payment/success with Stripe's session id so we can fulfill
+  // even when the webhook is delayed or missing on Vercel.
+  const successUrl = `${appUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${appUrl}/payment/cancel`;
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -39,9 +50,8 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
         quantity: 1,
       },
     ],
-    // session_id lets the success page confirm payment even if webhooks are delayed
-    success_url: `${appUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/payment/cancel`,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
     metadata: {
       requestId,
       propertyId: rentalRequest.propertyId,
