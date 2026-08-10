@@ -42,6 +42,25 @@ const confirmCheckoutSession = catchAsync(
   },
 );
 
+const syncPaidCheckouts = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw new Error("you are not logged in. Please log in to access");
+  }
+
+  const result = await paymentService.syncPaidCheckoutsForTenant(userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message:
+      result.synced.length > 0
+        ? `Synced ${result.synced.length} paid rental(s)`
+        : "No pending paid checkouts found",
+    data: result,
+  });
+});
+
 const getMyPayments = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
@@ -78,6 +97,7 @@ const getPaymentDetailsById = catchAsync(async (req: Request, res: Response, nex
 export const paymentController = {
   createCheckoutSession,
   confirmCheckoutSession,
+  syncPaidCheckouts,
   getMyPayments,
   getPaymentDetailsById ,
 };

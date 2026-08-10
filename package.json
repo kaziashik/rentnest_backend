@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
     "build": "tsup",
+    "vercel-build": "npm run build",
     "stripe:webhook": "stripe listen --forward-to localhost:5000/api/subscription/webhook",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",

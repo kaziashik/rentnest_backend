@@ -115,8 +115,54 @@ const confirmCheckoutSession = async (
   };
 };
 
+/**
+ * Safety net when success redirect loses session_id:
+ * find paid Stripe sessions for this tenant's APPROVED rentals and fulfill them.
+ */
+const syncPaidCheckoutsForTenant = async (tenantId: string) => {
+  const approved = await prisma.rentalRequest.findMany({
+    where: {
+      tenantId,
+      status: "APPROVED",
+      payment: null,
+    },
+    select: { id: true, propertyId: true },
+  });
 
+  if (!approved.length) {
+    return { synced: [] as string[], scanned: 0 };
+  }
 
+  const approvedIds = new Set(approved.map((r) => r.id));
+  const sessions = await stripe.checkout.sessions.list({
+    limit: 30,
+    status: "complete",
+  });
+
+  const synced: string[] = [];
+
+  for (const session of sessions.data) {
+    if (session.payment_status !== "paid") continue;
+    const requestId = session.metadata?.requestId;
+    if (!requestId || !approvedIds.has(requestId)) continue;
+    if (session.metadata?.tenantId && session.metadata.tenantId !== tenantId) {
+      continue;
+    }
+
+    await fulfillPaidCheckout({
+      requestId,
+      amountTotal: session.amount_total,
+      paymentIntent:
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent?.id ?? null,
+      sessionId: session.id,
+    });
+    synced.push(requestId);
+  }
+
+  return { synced, scanned: sessions.data.length };
+};
 
 const getMyPayments = async (tenantId: string) => {
   const payments = await prisma.payment.findMany({
@@ -150,7 +196,10 @@ const getMyPayments = async (tenantId: string) => {
   return payments;
 };
 
-const getPaymentDetailsById = async (paymentId: string, user: { id: string; role: string }) => {
+const getPaymentDetailsById = async (
+  paymentId: string,
+  user: { id: string; role: string },
+) => {
   const payment = await prisma.payment.findFirstOrThrow({
     where: {
       id: paymentId,
@@ -164,17 +213,17 @@ const getPaymentDetailsById = async (paymentId: string, user: { id: string; role
     },
   });
 
-   if (!payment ){
-    throw new Error( "Payment not found.");
-    }
+  if (!payment) {
+    throw new Error("Payment not found.");
+  }
 
-    const isOWner=payment.rentalRequest.tenantId===user.id;
-    const islandlordOfProperty=payment.rentalRequest.property.propertyOwnerId===user.id;
+  const isOWner = payment.rentalRequest.tenantId === user.id;
+  const islandlordOfProperty =
+    payment.rentalRequest.property.propertyOwnerId === user.id;
 
-    if(user.role !=="ADMIN" && !isOWner && !islandlordOfProperty){
-       throw new Error( "You are not allowed to view this payment.");
-    }
-    
+  if (user.role !== "ADMIN" && !isOWner && !islandlordOfProperty) {
+    throw new Error("You are not allowed to view this payment.");
+  }
 
   return payment;
 };
@@ -182,6 +231,7 @@ const getPaymentDetailsById = async (paymentId: string, user: { id: string; role
 export const paymentService = {
   createCheckoutSession,
   confirmCheckoutSession,
+  syncPaidCheckoutsForTenant,
   getMyPayments,
   getPaymentDetailsById,
 };
