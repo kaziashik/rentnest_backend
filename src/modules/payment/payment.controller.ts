@@ -22,6 +22,25 @@ const createCheckoutSession = catchAsync(
   },
 );
 
+const confirmCheckoutSession = catchAsync(
+  async (req: Request, res: Response) => {
+    const sessionId = String(req.body?.sessionId ?? "");
+    const userId = req.user?.id;
+
+    const result = await paymentService.confirmCheckoutSession(
+      sessionId,
+      userId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Payment confirmed successfully",
+      data: result,
+    });
+  },
+);
+
 const getMyPayments = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
@@ -57,6 +76,7 @@ const getPaymentDetailsById = catchAsync(async (req: Request, res: Response, nex
 
 export const paymentController = {
   createCheckoutSession,
+  confirmCheckoutSession,
   getMyPayments,
   getPaymentDetailsById ,
 };

@@ -1,8 +1,7 @@
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
 import config from "../../config";
-import { catchAsync } from "../../utils/catchAsync";
-import { NextFunction, Request, Response } from "express";
+import { fulfillPaidCheckout } from "./payment.fulfill";
 
 const createCheckoutSession = async (requestId: string, tenantId: string) => {
   const rentalRequest = await prisma.rentalRequest.findUniqueOrThrow({
@@ -10,11 +9,11 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
     include: { property: true },
   });
 
-  if(!rentalRequest){
-    throw new Error("Retal Request Not found.")
+  if (!rentalRequest) {
+    throw new Error("Retal Request Not found.");
   }
-  if(rentalRequest.tenantId !==tenantId){
-    throw new Error("This is not your rental Request.")
+  if (rentalRequest.tenantId !== tenantId) {
+    throw new Error("This is not your rental Request.");
   }
 
   if (rentalRequest.status !== "APPROVED") {
@@ -23,8 +22,6 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
     );
   }
 
-
-  //creat the payment session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
@@ -33,12 +30,13 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
         price_data: {
           currency: "usd",
           product_data: { name: rentalRequest.property.title },
-          unit_amount: Number(rentalRequest.property.rentPrice) * 100, // Stripe expects cents
+          unit_amount: Number(rentalRequest.property.rentPrice) * 100,
         },
         quantity: 1,
       },
     ],
-    success_url: `${config.app_url}/payment/success`,
+    // session_id lets the success page confirm payment even if webhooks are delayed
+    success_url: `${config.app_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.app_url}/payment/cancel`,
     metadata: {
       requestId,
@@ -48,6 +46,55 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
   });
 
   return { url: session.url };
+};
+
+const confirmCheckoutSession = async (sessionId: string, tenantId: string) => {
+  if (!sessionId) {
+    throw new Error("Checkout session id is required.");
+  }
+
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+  if (session.payment_status !== "paid") {
+    throw new Error("Stripe reports this checkout is not paid yet.");
+  }
+
+  const requestId = session.metadata?.requestId;
+  if (!requestId) {
+    throw new Error("Checkout session is missing rental request metadata.");
+  }
+
+  const rentalRequest = await prisma.rentalRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true, tenantId: true, status: true, propertyId: true },
+  });
+
+  if (!rentalRequest) {
+    throw new Error("Rental request not found for this payment.");
+  }
+
+  if (rentalRequest.tenantId !== tenantId) {
+    throw new Error("This payment does not belong to your account.");
+  }
+
+  const result = await fulfillPaidCheckout({
+    requestId,
+    amountTotal: session.amount_total,
+    paymentIntent:
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id ?? null,
+    sessionId: session.id,
+  });
+
+  return {
+    requestId,
+    propertyId: rentalRequest.propertyId,
+    status: "ACTIVE",
+    availability: "UNAVAILABLE",
+    alreadyFulfilled: result.alreadyFulfilled,
+    payment: result.payment,
+  };
 };
 
 
@@ -116,6 +163,7 @@ const getPaymentDetailsById = async (paymentId: string, user: { id: string; role
 
 export const paymentService = {
   createCheckoutSession,
+  confirmCheckoutSession,
   getMyPayments,
   getPaymentDetailsById,
 };

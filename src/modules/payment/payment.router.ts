@@ -13,6 +13,12 @@ router.post(
   paymentController.createCheckoutSession,
 );
 
+router.post(
+  "/confirm-checkout-session",
+  auth(Role.TENANT, Role.ADMIN),
+  paymentController.confirmCheckoutSession,
+);
+
 router.get("/", auth(Role.TENANT), paymentController.getMyPayments);
 router.get("/:id", auth(Role.TENANT, Role.ADMIN, Role.LANDLORD), paymentController.getPaymentDetailsById );
 
