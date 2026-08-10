@@ -164,20 +164,38 @@ const updateRentalRequestStatus = async (
     data: { status },
   });
 
-  // Payment sets UNAVAILABLE via fulfillPaidCheckout.
-  // When landlord marks the rental complete, list the house again.
-  if (status === "COMPLETED") {
-    await prisma.property.update({
-      where: { id: current.propertyId },
-      data: { availability: "AVAILABLE" },
+  // Lifecycle availability rules:
+  // PENDING / APPROVED → AVAILABLE (payment not confirmed yet)
+  // ACTIVE → UNAVAILABLE (after successful payment)
+  // COMPLETED → AVAILABLE (rental ended, list again)
+  if (status === "APPROVED" || status === "PENDING" || status === "REJECTED") {
+    const activeOnProperty = await prisma.rentalRequest.findFirst({
+      where: {
+        propertyId: current.propertyId,
+        status: "ACTIVE",
+        id: { not: current.id },
+      },
+      select: { id: true },
     });
+    if (!activeOnProperty) {
+      await prisma.property.update({
+        where: { id: current.propertyId },
+        data: { availability: "AVAILABLE" },
+      });
+    }
   }
 
-  // If landlord reverts somehow to ACTIVE (admin), keep listing off-market
   if (status === "ACTIVE") {
     await prisma.property.update({
       where: { id: current.propertyId },
       data: { availability: "UNAVAILABLE" },
+    });
+  }
+
+  if (status === "COMPLETED") {
+    await prisma.property.update({
+      where: { id: current.propertyId },
+      data: { availability: "AVAILABLE" },
     });
   }
 
