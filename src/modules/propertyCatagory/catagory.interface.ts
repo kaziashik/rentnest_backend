@@ -1,5 +1,5 @@
 
 export interface ICateoryPayload{
     name: string;
-    description?: string
+    description?: string | null;
 }

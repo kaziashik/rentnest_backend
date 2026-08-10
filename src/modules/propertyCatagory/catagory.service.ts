@@ -14,12 +14,20 @@ const creatPropertyCategorie=async(payload: ICateoryPayload)=>{
 }
 
 const getPropertyCategories = async() => {
-    const result= await prisma.category.findMany({
-        select:{
+    const result = await prisma.category.findMany({
+        select: {
             id: true,
             name: true,
-        }
-    })
+            description: true,
+            createdAt: true,
+            _count: {
+                select: {
+                    properties: true,
+                },
+            },
+        },
+        orderBy: { name: "asc" },
+    });
     return result;
 };
 
