@@ -334,7 +334,9 @@ const deleteProperty = async (
   });
 
   if (hasRentalRequests) {
-    throw new Error("sorry Cannot delete this property because it has existing rental requests Contect with Admin.");
+    throw new Error(
+      "Cannot delete this property because it has existing rental requests. Mark those rentals complete or contact an admin.",
+    );
   }
   let property;
   try {
