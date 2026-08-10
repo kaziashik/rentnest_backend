@@ -95,6 +95,15 @@ const getAllRentalRequests = async (user: { id: string; role: string }) => {
           location: true,
           rentPrice: true,
           property_image: true,
+          availability: true,
+          propertyOwner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
         },
       },
     },
