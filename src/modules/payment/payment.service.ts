@@ -66,6 +66,7 @@ const getMyPayments = async (tenantId: string) => {
               title: true,
               location: true,
               rentPrice: true,
+              property_image: true,
             },
           },
         },
@@ -77,9 +78,6 @@ const getMyPayments = async (tenantId: string) => {
     },
   });
 
-  if (payments.length === 0) {
-    throw new Error("You Don't Have Any paymanet history");
-  }
   return payments;
 };
 

@@ -88,7 +88,15 @@ const getAllRentalRequests = async (user: { id: string; role: string }) => {
     where,
     include: {
       tenant: { select: { id: true, name: true, email: true } },
-      property: { select: { id: true, title: true, rentPrice: true } },
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          rentPrice: true,
+          property_image: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
