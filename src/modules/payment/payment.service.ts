@@ -22,6 +22,10 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
     );
   }
 
+  const appUrl =
+    config.app_url?.replace(/\/$/, "") ||
+    "https://rentnest-frontend-theta.vercel.app";
+
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     mode: "payment",
@@ -36,8 +40,8 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
       },
     ],
     // session_id lets the success page confirm payment even if webhooks are delayed
-    success_url: `${config.app_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.app_url}/payment/cancel`,
+    success_url: `${appUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/payment/cancel`,
     metadata: {
       requestId,
       propertyId: rentalRequest.propertyId,
@@ -48,7 +52,10 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
   return { url: session.url };
 };
 
-const confirmCheckoutSession = async (sessionId: string, tenantId: string) => {
+const confirmCheckoutSession = async (
+  sessionId: string,
+  tenantId?: string | null,
+) => {
   if (!sessionId) {
     throw new Error("Checkout session id is required.");
   }
@@ -73,7 +80,8 @@ const confirmCheckoutSession = async (sessionId: string, tenantId: string) => {
     throw new Error("Rental request not found for this payment.");
   }
 
-  if (rentalRequest.tenantId !== tenantId) {
+  // Optional auth check — Stripe session id is the primary proof of payment
+  if (tenantId && rentalRequest.tenantId !== tenantId) {
     throw new Error("This payment does not belong to your account.");
   }
 

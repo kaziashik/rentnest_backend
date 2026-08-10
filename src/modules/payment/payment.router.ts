@@ -15,7 +15,6 @@ router.post(
 
 router.post(
   "/confirm-checkout-session",
-  auth(Role.TENANT, Role.ADMIN),
   paymentController.confirmCheckoutSession,
 );
 

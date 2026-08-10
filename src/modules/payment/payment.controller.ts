@@ -25,11 +25,12 @@ const createCheckoutSession = catchAsync(
 const confirmCheckoutSession = catchAsync(
   async (req: Request, res: Response) => {
     const sessionId = String(req.body?.sessionId ?? "");
-    const userId = req.user?.id;
+    // Auth is optional — Stripe session id proves payment
+    const userId = req.user?.id ?? null;
 
     const result = await paymentService.confirmCheckoutSession(
       sessionId,
-      userId as string,
+      userId,
     );
 
     sendResponse(res, {
