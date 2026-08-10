@@ -3,9 +3,17 @@ import { prisma } from "../../lib/prisma"
 
 
 const getAllUsers = async () => {
-
   const users = await prisma.user.findMany({
-    omit:{ password: true}
+    omit: { password: true },
+    include: {
+      _count: {
+        select: {
+          properties: true,
+          rentalRequest: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 
   return users;
@@ -36,6 +44,15 @@ const updateUserStatus = async (
     throw new Error( "activeStatus must be either ACTIVE or BANNED.");
   }
 
+  const existing = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  if (existing.role === "ADMIN") {
+    throw new Error("Admin accounts cannot be banned or unbanned.");
+  }
+
   const updatedUser = await prisma.user.update({
     where: {
       id: userId,
@@ -52,6 +69,15 @@ const updateUserStatus = async (
 
 
 const deleteUser = async (userId: string) => {
+
+  const existing = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  if (existing.role === "ADMIN") {
+    throw new Error("Admin accounts cannot be deleted.");
+  }
 
   const userDelet= await prisma.user.delete({
     where: {
