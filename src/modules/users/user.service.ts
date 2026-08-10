@@ -73,14 +73,16 @@ const getMyprofileDB = async (userId : any) => {
 
 
 const updateMyProfileDB = async (userId: string, payload: any) => {
-  const { name, email, password, phone } = payload;
- 
+  const { name, email, password, phone, photo } = payload;
 
   const data: Record<string, any> = {};
 
   if (name !== undefined) data.name = name;
   if (email !== undefined) data.email = email;
   if (phone !== undefined) data.phone = phone;
+  if (photo !== undefined) {
+    data.photo = photo === "" ? null : photo;
+  }
 
   if (password !== undefined) {
     if (password.length < 5) {
