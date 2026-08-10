@@ -38,9 +38,13 @@ const createCheckoutSession = async (requestId: string, tenantId: string) => {
         quantity: 1,
       },
     ],
-    success_url: `${config.app_url}/success`,
-    cancel_url: `${config.app_url}/cancel`,
-    metadata: { requestId },
+    success_url: `${config.app_url}/payment/success`,
+    cancel_url: `${config.app_url}/payment/cancel`,
+    metadata: {
+      requestId,
+      propertyId: rentalRequest.propertyId,
+      tenantId,
+    },
   });
 
   return { url: session.url };

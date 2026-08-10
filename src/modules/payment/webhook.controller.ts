@@ -18,42 +18,56 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Only log if it's the event we care about
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as any;
+    const requestId = session.metadata?.requestId as string | undefined;
 
-    // Safety Check: Ensure metadata exists
-    if (session.metadata?.requestId) {
-      // console.log("Processing Payment for Request ID:", session.metadata.requestId);
-
-      const requestId = session.metadata.requestId;
-
-      const existing = await prisma.payment.findUnique({
-        where: { requestId },
-      });
-
-      if (existing) {
-        return res.json({ received: true }); // already proceid, tell to stripe we're done
-      }
-      await prisma.$transaction([
-        prisma.payment.create({
-          data: {
-            requestId,
-            amount: session.amount_total / 100,
-            paymentStatus: "PAID",
-            transactionId: session.payment_intent as string,
-            paymentMethod: "STRIPE",
-            paidAt: new Date(),
-          },
-        }),
-        prisma.rentalRequest.update({
-          where: { id: requestId },
-          data: { status: "ACTIVE" },
-        }),
-      ]);
-    } else {
+    if (!requestId) {
       console.error("Payment succeeded but no requestId found in metadata!");
+      return res.json({ received: true });
     }
+
+    const existing = await prisma.payment.findUnique({
+      where: { requestId },
+    });
+
+    if (existing) {
+      return res.json({ received: true });
+    }
+
+    const rentalRequest = await prisma.rentalRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true, propertyId: true },
+    });
+
+    if (!rentalRequest) {
+      console.error(`Payment succeeded but rental request ${requestId} was not found`);
+      return res.json({ received: true });
+    }
+
+    await prisma.$transaction([
+      prisma.payment.create({
+        data: {
+          requestId,
+          amount: (session.amount_total ?? 0) / 100,
+          paymentStatus: "PAID",
+          transactionId: (session.payment_intent as string) || `stripe_${session.id}`,
+          paymentMethod: "STRIPE",
+          paidAt: new Date(),
+        },
+      }),
+      // Tenant rental becomes Active after successful payment
+      prisma.rentalRequest.update({
+        where: { id: requestId },
+        data: { status: "ACTIVE" },
+      }),
+      // Listing leaves the market once rent is paid
+      prisma.property.update({
+        where: { id: rentalRequest.propertyId },
+        data: { availability: "UNAVAILABLE" },
+      }),
+    ]);
   }
-   return res.json({ received: true });
+
+  return res.json({ received: true });
 };
