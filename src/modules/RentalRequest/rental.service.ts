@@ -160,23 +160,24 @@ const updateRentalRequestStatus = async (
   // This allows the Admin to bypass the owner check.
 
   const result = await prisma.rentalRequest.update({
-    where,
+    where: { id: current.id },
     data: { status },
   });
 
-  // when approved/active, take the property off the market so it can't be double-booked
-  if (status === "APPROVED" || status === "ACTIVE") {
-    await prisma.property.update({
-      where: { id: current.propertyId },
-      data: { availability: "UNAVAILABLE" },
-    });
-  }
-
-  // when rental ends, list the property again
+  // Payment sets UNAVAILABLE via fulfillPaidCheckout.
+  // When landlord marks the rental complete, list the house again.
   if (status === "COMPLETED") {
     await prisma.property.update({
       where: { id: current.propertyId },
       data: { availability: "AVAILABLE" },
+    });
+  }
+
+  // If landlord reverts somehow to ACTIVE (admin), keep listing off-market
+  if (status === "ACTIVE") {
+    await prisma.property.update({
+      where: { id: current.propertyId },
+      data: { availability: "UNAVAILABLE" },
     });
   }
 
