@@ -13,8 +13,8 @@ A backend API for a rental property marketplace. Landlords list properties, tena
 | **GitHub Monorepo** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) · [rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
 | **Frontend Code** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) |
 | **Backend Code** | [github.com/kaziashik/rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
-| **API Documentation** | [`Resources/API_DOCUMENTATION.md`](./Resources/API_DOCUMENTATION.md) |
-| **Postman Collection** | [`Resources/RentNest.postman_collection.json`](./Resources/RentNest.postman_collection.json) |
+| **API Documentation** | [`Resources/docs/RentNest_API_Design_Documentation.md`](./Resources/docs/RentNest_API_Design_Documentation.md) |
+| **Postman Collection** | [`Resources/postman/RentNest API.postman_collection.json`](./Resources/postman/RentNest%20API.postman_collection.json) |
 
 
 
