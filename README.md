@@ -3,6 +3,9 @@
 
 A backend API for a rental property marketplace. Landlords list properties, tenants browse and request to rent them, payments are processed through Stripe, and admins moderate the platform.
 
+[![Live Site](https://img.shields.io/badge/Live-rentnest--frontend--theta.vercel.app-4c8bf5)](https://rentnest-frontend-theta.vercel.app)
+[![Backend API](https://img.shields.io/badge/Backend-rentnestbackend.vercel.app-6cc644)](https://rentnestbackend.vercel.app)
+
 | Resource | Link |
 |---|---|
 | **Live Frontend** | [https://rentnest-frontend-theta.vercel.app](https://rentnest-frontend-theta.vercel.app) |
@@ -13,6 +16,227 @@ A backend API for a rental property marketplace. Landlords list properties, tena
 | **API Documentation** | [`Resources/API_DOCUMENTATION.md`](./Resources/API_DOCUMENTATION.md) |
 | **Postman Collection** | [`Resources/RentNest.postman_collection.json`](./Resources/RentNest.postman_collection.json) |
 
+
+
+
+
+## 1. One-look system flow
+
+```mermaid
+flowchart TD
+    A["👀 Visitor opens the site"] --> B["🔍 Browse and filter properties"]
+    B --> C["🏢 Open a property page"]
+    C --> D{"🏠 Logged in as tenant?"}
+    D -- No --> E["🔐 Register or login as TENANT"]
+    E --> C
+    D -- Yes --> F["📝 Submit rental request"]
+    F --> G["⏳ Status PENDING"]
+    G --> H{"🔑 Landlord decision"}
+    H -- Reject --> I["❌ Status REJECTED"]
+    I --> Z["🚫 Request closed"]
+    H -- Approve --> J["✅ Status APPROVED"]
+    J --> K["🔒 Property set to UNAVAILABLE"]
+    K --> L["💳 Tenant pays with Stripe"]
+    L --> M{"💳 Stripe webhook"}
+    M -- Payment completed --> N["🟢 Payment PAID and status ACTIVE"]
+    M -- Checkout cancelled --> O["✅ Stay APPROVED - tenant can pay again"]
+    N --> P["🏁 Landlord or admin marks COMPLETED"]
+    P --> Q["⭐ Tenant writes one review"]
+
+    classDef visitor fill:#ede9fe,stroke:#7c3aed,color:#1e1b4b
+    classDef tenant fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef landlord fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef pay fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    class A,B,C visitor
+    class D,E,F,Q tenant
+    class H,P landlord
+    class L,M,N,O pay
+```
+
+---
+
+## 2. How the three roles meet on one rental
+
+```mermaid
+sequenceDiagram
+    participant V as 👀 Visitor
+    participant T as 🏠 Tenant
+    participant L as 🔑 Landlord
+    participant A as 🛡️ Admin
+    participant API as ⚙️ API
+    participant S as 💳 Stripe
+
+    V->>API: 🔍 Browse properties
+    T->>API: 📝 Register and submit rental request
+    API-->>L: Request appears on Rent Requests
+    alt Landlord approves
+        L->>API: ✅ Set APPROVED
+        API-->>API: 🔒 Property UNAVAILABLE
+        T->>API: 💳 Start checkout
+        API->>S: Checkout session
+        S->>API: Webhook payment completed
+        API-->>T: 🟢 Request is ACTIVE
+        L->>API: 🏁 Set COMPLETED
+        T->>API: ⭐ Post review
+    else Landlord rejects
+        L->>API: ❌ Set REJECTED
+    else Dispute or manual step
+        A->>API: 🚫 Ban a user, or move status along the same allowed path
+    end
+```
+
+---
+
+## 3. Rental status machine
+
+These are the only transitions the API allows (`ALLOWED_TRANSITIONS` in the rental service). `REJECTED` and `COMPLETED` cannot move again.
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    state "⏳ PENDING" as PENDING
+    state "✅ APPROVED" as APPROVED
+    state "❌ REJECTED" as REJECTED
+    state "🟢 ACTIVE" as ACTIVE
+    state "🏁 COMPLETED" as COMPLETED
+    PENDING --> APPROVED: 🔑 landlord or 🛡️ admin approves
+    PENDING --> REJECTED: 🔑 landlord or 🛡️ admin rejects
+    APPROVED --> ACTIVE: 💳 Stripe webhook after payment
+    ACTIVE --> COMPLETED: 🔑 landlord or 🛡️ admin ends the rental
+    REJECTED --> [*]
+    COMPLETED --> [*]
+```
+
+What each status means:
+
+| Status | Meaning | Who moves it |
+|---|---|---|
+| ⏳ `PENDING` | Request sent, waiting for a decision | Created by the tenant |
+| ✅ `APPROVED` | Landlord accepted. Property is taken off the market | Landlord or admin |
+| ❌ `REJECTED` | Landlord declined. Terminal | Landlord or admin |
+| 🟢 `ACTIVE` | Stripe payment recorded. Tenant is renting | Stripe webhook (`checkout.session.completed`) |
+| 🏁 `COMPLETED` | Rental finished. Review is now allowed | Landlord or admin |
+
+Approving a request sets that property’s `availability` to `UNAVAILABLE`, so it cannot be requested again while the booking is open.
+
+A tenant cannot submit a second request for the same property while one is already `PENDING`, `APPROVED`, or `ACTIVE`.
+
+---
+
+## 4. Public user flow
+
+Anyone can use the public site without an account.
+
+Pages: `/` (home and listings), `/propertiesDetails/[id]`, `/about`, `/services`, `/contact`, `/success`, `/cancel`.
+
+```mermaid
+flowchart TD
+    A["👀 Open Home"] --> B["🔍 Search and filter listings"]
+    B --> C["📍 Location, price, category, sort, page"]
+    C --> D["🏢 Property cards"]
+    D --> E["🏢 Property details"]
+    E --> F["🖼️ Photos, price, owner contact, reviews"]
+    F --> G{"🏠 Want to rent?"}
+    G -- Not logged in --> H["🔐 Go to Register or Login"]
+    G -- Logged in as tenant --> I["📝 Open Request Rental dialog"]
+    I --> J["📅 Move-in date and message"]
+    J --> K["📝 POST /api/rentals"]
+    H --> L{"🔐 Choose role"}
+    L -- Tenant --> M["🏠 Tenant dashboard after login"]
+    L -- Landlord --> N["🔑 Landlord dashboard after login"]
+
+    classDef visitor fill:#ede9fe,stroke:#7c3aed,color:#1e1b4b
+    classDef tenant fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef landlord fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class A,B,C,D,E,F visitor
+    class G,I,J,K,M tenant
+    class N landlord
+```
+
+Public property search uses `GET /api/properties` with `location`, `minPrice`, `maxPrice`, `category`, `sort` (`price_asc` / `price_desc`), `page`, and `limit`.
+
+---
+
+
+## 10. Where each role can go
+
+| Step | 👀 Public visitor | 🏠 Tenant | 🔑 Landlord | 🛡️ Admin |
+|---|:---:|:---:|:---:|:---:|
+| Browse and search listings | Yes | Yes | Yes | Yes |
+| Register from the site | Yes, as tenant or landlord | — | — | No |
+| Submit a rental request | No | Yes | No | No |
+| Approve or reject a request | No | No | Own properties | Any request |
+| Pay with Stripe | No | Own approved request | No | No |
+| Mark a rental completed | No | No | Own properties | Any request |
+| Write a review | No | After COMPLETED | No | No |
+| Create and edit listings | No | No | Own listings | Can use landlord routes |
+| Ban or delete users | No | No | No | Yes |
+| Manage categories | No | No | No | Yes |
+| See platform revenue | No | No | No | Yes |
+
+---
+
+## 11. Screen map
+
+```mermaid
+flowchart LR
+    subgraph pub ["👀 Public"]
+        Home["🏠 / listings"]
+        Details["🏢 /propertiesDetails/id"]
+        About["ℹ️ /about"]
+        Services["🛠️ /services"]
+        Contact["✉️ /contact"]
+        Success["✅ /success"]
+        Cancel["↩️ /cancel"]
+    end
+
+    subgraph auth ["🔐 Auth"]
+        Login["🔐 /login"]
+        Register["📝 /register"]
+    end
+
+    subgraph tenant ["🏠 Tenant"]
+        TD["📊 /dashboard"]
+        TP["👤 /tenant-dashboard/profile"]
+        TR["📝 /tenant-dashboard/requests"]
+        TPay["💳 /tenant-dashboard/payments"]
+        TRev["⭐ /dashboard/reviews"]
+    end
+
+    subgraph landlord ["🔑 Landlord"]
+        LD["📊 /landlord-dashboard"]
+        LP["👤 /landlord-dashboard/profile"]
+        LList["🏢 /landlord-dashboard/properties"]
+        LAdd["➕ /landlord-dashboard/properties/create"]
+        LReq["📝 /landlord-dashboard/properties/requests"]
+    end
+
+    subgraph admin ["🛡️ Admin"]
+        AD["📊 /admin-dashboard"]
+        AP["👤 /admin-dashboard/profile"]
+        AU["👥 /admin-dashboard/users"]
+        AC["🗂️ /admin-dashboard/categories"]
+        AProp["🏢 /admin-dashboard/properties"]
+        AR["📝 /admin-dashboard/rentals"]
+    end
+
+    Home --> Details
+    Details --> Login
+    Register --> Login
+    Login --> TD
+    Login --> LD
+    Login --> AD
+    Details --> Success
+    Details --> Cancel
+
+    style pub fill:#ede9fe,stroke:#7c3aed,color:#1e1b4b
+    style auth fill:#f1f5f9,stroke:#475569,color:#0f172a
+    style tenant fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style landlord fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style admin fill:#ffedd5,stroke:#ea580c,color:#7c2d12
+```
+
+Open this file in a Markdown preview that supports Mermaid (Cursor, GitHub, or VS Code with a Mermaid extension) to see the diagrams rendered.
 ## Table of Contents
 
 - [1. Project Overview](#1-project-overview)
