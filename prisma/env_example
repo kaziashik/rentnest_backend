@@ -1,0 +1,34 @@
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# The following `prisma+postgres` URL is similar to the URL produced by running a local Prisma Postgres
+# server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the
+# one found in a remote Prisma Postgres URL, does not contain any sensitive information.
+
+PORT=5000
+
+APP_URL=http://localhost:3000
+# APP_URL=https://rentnest-frontend-theta.vercel.app
+DATABASE_URL=
+
+
+BCRYPT_SALT_ROUNDS=10
+JWT_ACCESS_SECRET =''
+JWT_REFRESH_SECRET='n'
+JWT_ACCESS_EXPIRES_IN='1d'
+JWT_REFRESH_EXPIRES_IN='7d'
+    
+
+
+STRIPE_PRODUCT_ID=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET= 
+
+# whsec_b3160882d990bf32719f0caa8043112cbcd4d97485d6f8c2cdcda7f4ee7ee056
+
+
+# sleek-silent-dazzle-hale
