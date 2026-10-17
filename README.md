@@ -3,6 +3,16 @@
 
 A backend API for a rental property marketplace. Landlords list properties, tenants browse and request to rent them, payments are processed through Stripe, and admins moderate the platform.
 
+| Resource | Link |
+|---|---|
+| **Live Frontend** | [https://rentnest-frontend-theta.vercel.app](https://rentnest-frontend-theta.vercel.app) |
+| **Backend API** | [https://rentnestbackend.vercel.app](https://rentnestbackend.vercel.app) |
+| **GitHub Monorepo** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) · [rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
+| **Frontend Code** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) |
+| **Backend Code** | [github.com/kaziashik/rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
+| **API Documentation** | [`Resources/API_DOCUMENTATION.md`](./Resources/API_DOCUMENTATION.md) |
+| **Postman Collection** | [`Resources/RentNest.postman_collection.json`](./Resources/RentNest.postman_collection.json) |
+
 ## Table of Contents
 
 - [1. Project Overview](#1-project-overview)
