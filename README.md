@@ -3,8 +3,21 @@
 
 A backend API for a rental property marketplace. Landlords list properties, tenants browse and request to rent them, payments are processed through Stripe, and admins moderate the platform.
 
+## Live Links
+
+| Resource | Link |
+|---|---|
+| **Live Frontend** | [https://rentnest-frontend-theta.vercel.app](https://rentnest-frontend-theta.vercel.app) |
+| **Backend API** | [https://rentnestbackend.vercel.app](https://rentnestbackend.vercel.app) |
+| **GitHub Monorepo** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) · [rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
+| **Frontend Code** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) |
+| **Backend Code** | [github.com/kaziashik/rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
+| **API Documentation** | [`Resources/docs/RentNest_API_Design_Documentation.md`](https://github.com/kaziashik/rentnest_backend/blob/main/Resources/docs/RentNest_API_Design_Documentation.md) |
+| **Postman Collection** | [`Resources/postman/RentNest API.postman_collection.json`](https://github.com/kaziashik/rentnest_backend/blob/main/Resources/postman/RentNest%20API.postman_collection.json) |
+
 ## Table of Contents
 
+- [Live Links](#live-links)
 - [1. Project Overview](#1-project-overview)
 - [2. Roles & Permissions](#2-roles--permissions)
 - [3. Technology Stack](#3-technology-stack)
