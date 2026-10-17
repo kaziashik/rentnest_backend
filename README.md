@@ -14,6 +14,7 @@ A backend API for a rental property marketplace. Landlords list properties, tena
 | **Backend Code** | [github.com/kaziashik/rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
 | **API Documentation** | [`Resources/docs/RentNest_API_Design_Documentation.md`](./Resources/docs/RentNest_API_Design_Documentation.md) |
 | **Postman Collection** | [`Resources/postman/RentNest API.postman_collection.json`](./Resources/postman/RentNest%20API.postman_collection.json) |
+| **Database Diagram (drawSQL)** | [drawsql.app/teams/kazi-ashikur/diagrams/rentnest](https://drawsql.app/teams/kazi-ashikur/diagrams/rentnest) |
 
 
 
@@ -85,6 +86,8 @@ sequenceDiagram
 ```
 
 ![RentNest database schema (drawSQL)](./drawSQL-rentnest.jpg)
+
+🔗 **Live diagram (drawSQL):** [https://drawsql.app/teams/kazi-ashikur/diagrams/rentnest](https://drawsql.app/teams/kazi-ashikur/diagrams/rentnest)
 
 ---
 
