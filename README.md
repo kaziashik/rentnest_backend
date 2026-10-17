@@ -10,7 +10,6 @@ A backend API for a rental property marketplace. Landlords list properties, tena
 |---|---|
 | **Live Frontend** | [https://rentnest-frontend-theta.vercel.app](https://rentnest-frontend-theta.vercel.app) |
 | **Backend API** | [https://rentnestbackend.vercel.app](https://rentnestbackend.vercel.app) |
-| **GitHub Monorepo** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) · [rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
 | **Frontend Code** | [github.com/kaziashik/rentnest_frontend-](https://github.com/kaziashik/rentnest_frontend-) |
 | **Backend Code** | [github.com/kaziashik/rentnest_backend](https://github.com/kaziashik/rentnest_backend) |
 | **API Documentation** | [`Resources/docs/RentNest_API_Design_Documentation.md`](./Resources/docs/RentNest_API_Design_Documentation.md) |
@@ -84,6 +83,8 @@ sequenceDiagram
         A->>API: 🚫 Ban a user, or move status along the same allowed path
     end
 ```
+
+![RentNest database schema (drawSQL)](./drawSQL-rentnest.jpg)
 
 ---
 
